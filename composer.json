@@ -1,0 +1,32 @@
+{
+  "name": "sinbadxiii/phalcon-auth",
+  "description": "Simple Auth For Phalcon",
+  "keywords": ["phalcon", "framework", "auth", "authorization", "Phalcon Auth"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Sergey Mukhin",
+      "email": "sinbadxiii@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.2.5 || ^8.0"
+  },
+  "require-dev": {
+
+  },
+  "autoload": {
+    "psr-4": {
+      "Sinbadxiii\\PhalconAuth\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Sinbadxiii\\PhalconAuth\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "preferred-install": "dist"
+  },
+  "minimum-stability": "dev"
+}
