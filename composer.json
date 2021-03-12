@@ -24,5 +24,5 @@
       "Sinbadxiii\\PhalconAuth\\Tests\\": "tests/"
     }
   },
-  "minimum-stability": "dev-master"
+  "minimum-stability": "dev"
 }
