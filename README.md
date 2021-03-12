@@ -183,6 +183,17 @@ $this->user();
 $this->id();
 //get user id
 
+$this->auth->logout();
+//log out user
+
+
+$username = $this->request->getPost("username");
+$password = $this->request->getPost("password");
+$remember = $this->request->getPost("remember");
+
+$this->auth->attempt(['username' => $username, 'password' => $password], $remember);
+//attempt login with credentials
+
 ```
 
 ### Configuration

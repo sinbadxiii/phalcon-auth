@@ -13,7 +13,6 @@
     "php": "^7.2.5 || ^8.0"
   },
   "require-dev": {
-
   },
   "autoload": {
     "psr-4": {
@@ -25,8 +24,5 @@
       "Sinbadxiii\\PhalconAuth\\Tests\\": "tests/"
     }
   },
-  "config": {
-    "preferred-install": "dist"
-  },
-  "minimum-stability": "dev"
+  "minimum-stability": "dev-master"
 }
