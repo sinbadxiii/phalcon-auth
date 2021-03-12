@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\RememberToken;
 
+use Phalcon\Di;
 use Phalcon\Mvc\Model;
 
 class RememberTokenModel extends Model
@@ -50,7 +51,14 @@ class RememberTokenModel extends Model
 
     public function initialize()
     {
-        $this->setSource('admin_users_remember_tokens');
+        $configAuth = Di::getDefault()->getShared("config")->auth;
+
+        $tableRememberToken = $configAuth->guards->{$configAuth->defaults->guard}->provider .
+            "_remember_tokens";
+
+        $this->nameTable = $tableRememberToken;
+
+        $this->setSource($this->nameTable);
     }
 
     public function beforeValidationOnCreate()
