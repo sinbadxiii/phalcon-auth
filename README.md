@@ -2,7 +2,7 @@
 
 You can see an example of an application with authorization and limit here [sinbadxiii/phalcon-auth-example](https://github.com/sinbadxiii/phalcon-auth-example)
 
-![Banner](https://github.com/sinbadxiii/images/blob/master/phalcon-auth-logo.png?raw=true)
+![Banner](https://github.com/sinbadxiii/images/blob/master/phalcon-auth/phalcon-auth-logo.png?raw=true)
 
 
 ## Installation
