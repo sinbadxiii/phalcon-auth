@@ -41,4 +41,9 @@ trait UserHelper
     {
         return $this->user;
     }
+
+    public function guest()
+    {
+        return ! $this->check();
+    }
 }

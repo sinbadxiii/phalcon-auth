@@ -24,6 +24,7 @@ class SessionGuard
     protected $cookies;
     protected $eventsManager;
     protected $request;
+    protected $lastUserAttempted;
 
     public function __construct($name, $provider)
     {
@@ -38,20 +39,15 @@ class SessionGuard
 
     public function attempt(array $credentials = [], $remember = false)
     {
-        $user = $this->provider->retrieveByCredentials($credentials);
+        $this->lastUserAttempted = $this->provider->retrieveByCredentials($credentials);
 
-        if ($this->hasValidCredentials($user, $credentials)) {
-            $this->login($user, $remember);
+        if ($this->hasValidCredentials($this->lastUserAttempted, $credentials)) {
+            $this->login($this->lastUserAttempted, $remember);
 
             return true;
         }
 
         return false;
-    }
-
-    protected function hasValidCredentials($user, $credentials)
-    {
-        return !is_null($user) && $this->provider->validateCredentials($user, $credentials);
     }
 
     public function user()
@@ -76,6 +72,18 @@ class SessionGuard
         }
 
         return $this->user;
+    }
+
+    protected function hasValidCredentials($user, $credentials)
+    {
+        return !is_null($user) && $this->provider->validateCredentials($user, $credentials);
+    }
+
+    public function validate(array $credentials = [])
+    {
+        $this->lastUserAttempted = $this->provider->retrieveByCredentials($credentials);
+
+        return $this->hasValidCredentials($this->lastUserAttempted, $credentials);
     }
 
     protected function userFromRecaller($recaller)
@@ -124,6 +132,32 @@ class SessionGuard
         $this->event(new AfterLogin());
     }
 
+    public function loginById($id, $remember = false)
+    {
+        if ( ! is_null($user = $this->provider->retrieveById($id))) {
+            $this->login($user, $remember);
+
+            return $user;
+        }
+
+        return false;
+    }
+
+    public function once(array $credentials = [])
+    {
+        $this->event(new BeforeLogin());
+
+        if ($this->validate($credentials)) {
+            $this->setUser($this->lastUserAttempted);
+
+            $this->event(new AfterLogin());
+
+            return true;
+        }
+
+        return false;
+    }
+
     protected function rememberUser(AuthenticatableInterface $user)
     {
         $this->cookies->set($this->getRememberName(),
@@ -166,6 +200,11 @@ class SessionGuard
         $this->event(new Logout($user));
 
         $this->user = null;
+    }
+
+    public function getLastUserAttempted()
+    {
+        return $this->lastUserAttempted;
     }
 
     public function event(EventInterface $event)

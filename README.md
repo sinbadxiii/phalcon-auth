@@ -207,8 +207,27 @@ $remember = $this->request->getPost("remember");
 $this->auth->attempt(['username' => $username, 'password' => $password], $remember);
 //attempt login with credentials
 
+
+$user = Users::findFirst(1);
+// Login and Remember the given user
+$this->auth->login($user, true);
+//and force login user by id 
+$this->auth->loginById(1, true);
+
+
+//once auth without saving session and cookies
+$username = $this->request->getPost("username");
+$password = $this->request->getPost("password");
+$this->auth->once(['username' => $username, 'password' => $password]);
+
+
+
 ```
 
 ### Configuration
 
 copy file from `config/auth.php` in your folder config and merge yout config
+
+
+### License
+The MIT License (MIT). Please see [License File](https://github.com/sinbadxiii/phalcon-auth/blob/master/LICENSE) for more information.
