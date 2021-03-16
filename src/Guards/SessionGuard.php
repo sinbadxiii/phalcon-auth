@@ -25,6 +25,12 @@ class SessionGuard
     protected $eventsManager;
     protected $request;
     protected $lastUserAttempted;
+    /**
+     * If the user was an authenticate recaller
+     *
+     * @var bool
+     */
+    protected $viaRemember = false;
 
     public function __construct($name, $provider)
     {
@@ -88,9 +94,11 @@ class SessionGuard
 
     protected function userFromRecaller($recaller)
     {
-        return $this->provider->retrieveByToken(
+        $this->viaRemember = ! is_null($user = $this->provider->retrieveByToken(
             $recaller->id(), $recaller->token(), $recaller->userAgent()
-        );
+        ));
+
+        return $user;
     }
 
     protected function recaller()
@@ -210,5 +218,10 @@ class SessionGuard
     public function event(EventInterface $event)
     {
         return $this->eventsManager->fire("auth:" . $event->getType(), $this);
+    }
+
+    public function viaRemember()
+    {
+        return $this->viaRemember;
     }
 }
