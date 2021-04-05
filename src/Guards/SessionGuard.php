@@ -167,10 +167,9 @@ class SessionGuard
 
     protected function rememberUser(AuthenticatableInterface $user)
     {
-        $this->createRememberToken($user);
-        $rememberToken = $user->getRememberToken();
+        $rememberToken = $this->createRememberToken($user);
 
-        if (!is_null($user->getRememberToken())) {
+        if (!is_null($rememberToken)) {
             $this->cookies->set($this->getRememberName(),
                 json_encode([
                     'id'         => $user->getAuthIdentifier(),
@@ -185,7 +184,7 @@ class SessionGuard
 
     protected function createRememberToken(AuthenticatableInterface $user)
     {
-        $this->provider->createRememberToken($user);
+        return $this->provider->createRememberToken($user);
     }
 
     protected function updateSession($id)
