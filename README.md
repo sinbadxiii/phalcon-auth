@@ -19,7 +19,7 @@ Phalcon 4. PHP 7.2-8.0.
 
 Require the project using composer:
 
-`composer require "sinbadxiii/phalcon-auth:dev-master"`
+`composer require "sinbadxiii/phalcon-auth:^v1.1.0"`
 
 
 ## How use
@@ -220,6 +220,8 @@ $username = $this->request->getPost("username");
 $password = $this->request->getPost("password");
 $this->auth->once(['username' => $username, 'password' => $password]);
 
+//use method viaRemember to check the user was authenticated using the remember me cookie
+$this->auth->viaRemember();
 
 
 ```

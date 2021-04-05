@@ -3,7 +3,6 @@
 namespace Sinbadxiii\PhalconAuth\User;
 
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
-use Models\AdminUsers;
 use Phalcon\Di;
 use Phalcon\Security\Random;
 
@@ -46,10 +45,16 @@ class UserModelProvider implements UserModelProviderInterface
         /**
          * @todo придумать как не жестко привязывать к id
          */
+
+
+        return $this->model::findFirst($identifier);
+
+
+
         return DI::getDefault()->get('modelsManager')
             ->createBuilder()
-            ->from([$this->model])
-            ->where("id = :id:",
+            ->from(['m' =>$this->model])
+            ->where("m.id = :id:",
             [
                 "id" => $identifier
             ])
@@ -60,7 +65,7 @@ class UserModelProvider implements UserModelProviderInterface
     {
         $retrievedModel = DI::getDefault()->get('modelsManager')
             ->createBuilder()
-            ->from([$this->model])
+            ->from($this->model)
             ->where("id = :id:",
                 [
                     "id" => $identifier

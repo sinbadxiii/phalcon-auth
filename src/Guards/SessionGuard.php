@@ -69,7 +69,6 @@ class SessionGuard
         }
 
         if (is_null($this->user) && !is_null($recaller = $this->recaller())) {
-
             $this->user = $this->userFromRecaller($recaller);
 
             if ($this->user) {
@@ -168,22 +167,25 @@ class SessionGuard
 
     protected function rememberUser(AuthenticatableInterface $user)
     {
-        $this->cookies->set($this->getRememberName(),
-            json_encode([
-                'id'         => $user->getAuthIdentifier(),
-                'token'      => $user->getRememberToken()->token,
-                'user_agent' => $this->request->getUserAgent()
-            ], JSON_THROW_ON_ERROR)
-        );
-
         $this->createRememberToken($user);
+        $rememberToken = $user->getRememberToken();
+
+        if (!is_null($user->getRememberToken())) {
+            $this->cookies->set($this->getRememberName(),
+                json_encode([
+                    'id'         => $user->getAuthIdentifier(),
+                    'token'      => $rememberToken->token,
+                    'user_agent' => $this->request->getUserAgent()
+                ], JSON_THROW_ON_ERROR)
+            );
+        }
+
+
     }
 
     protected function createRememberToken(AuthenticatableInterface $user)
     {
-        if (empty($user->getRememberToken())) {
-            $this->provider->createRememberToken($user);
-        }
+        $this->provider->createRememberToken($user);
     }
 
     protected function updateSession($id)
