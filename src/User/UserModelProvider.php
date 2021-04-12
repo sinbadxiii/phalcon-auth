@@ -76,7 +76,7 @@ class UserModelProvider implements UserModelProviderInterface
             return;
         }
 
-        $rememberTokenModel = $retrievedModel->getRememberToken();
+        $rememberTokenModel = $retrievedModel->getRememberToken($token);
 
         if (!$rememberTokenModel) {
             return;
