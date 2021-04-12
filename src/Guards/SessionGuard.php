@@ -175,7 +175,8 @@ class SessionGuard
                     'id'         => $user->getAuthIdentifier(),
                     'token'      => $rememberToken->token,
                     'user_agent' => $this->request->getUserAgent()
-                ], JSON_THROW_ON_ERROR)
+                ], JSON_THROW_ON_ERROR),
+                date("U") + 365 * 24 * 60 * 60
             );
         }
     }
