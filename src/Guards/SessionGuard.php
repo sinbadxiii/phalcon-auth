@@ -178,8 +178,6 @@ class SessionGuard
                 ], JSON_THROW_ON_ERROR)
             );
         }
-
-
     }
 
     protected function createRememberToken(AuthenticatableInterface $user)
@@ -196,15 +194,17 @@ class SessionGuard
     {
         $user = $this->user();
 
-        if ($this->user && ($tokenRemember = $this->user->getRememberToken())) {
-            $tokenRemember->delete();
+        if (! is_null($recaller = $this->recaller())) {
+            $this->cookies->get($this->getRememberName())->delete();
+
+            if ($this->user && ($tokenRemember = $this->user->getRememberToken(
+                $recaller->token()))
+            ) {
+                $tokenRemember->delete();
+            }
         }
 
         $this->session->remove($this->getName());
-
-        if (! is_null($this->recaller())) {
-            $this->cookies->get($this->getRememberName())->delete();
-        }
 
         $this->event(new Logout($user));
 

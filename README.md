@@ -173,9 +173,12 @@ class Users extends BaseModel implements AuthenticatableInterface, RememberingIn
         return $this->password;
     }
 
-    public function getRememberToken()
+    public function getRememberToken($token)
     {
-        return $this->remember_token;
+        return $this->getRelated('remember_token', [
+            'token=:token:',
+            'bind' => ['token' => $token]
+        ]);
     }
 
     public function setRememberToken($value)

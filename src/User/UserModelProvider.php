@@ -68,7 +68,7 @@ class UserModelProvider implements UserModelProviderInterface
             ->from($this->model)
             ->where("id = :id:",
                 [
-                    "id" => $identifier
+                    "id"    => $identifier
                 ])
             ->getQuery()->execute()->getFirst();
 
@@ -76,7 +76,7 @@ class UserModelProvider implements UserModelProviderInterface
             return;
         }
 
-        $rememberTokenModel = $retrievedModel->getRememberToken();
+        $rememberTokenModel = $retrievedModel->getRememberToken($token);
 
         if (!$rememberTokenModel) {
             return;
@@ -95,6 +95,7 @@ class UserModelProvider implements UserModelProviderInterface
         $token = $random->base64(60);
 
         $rememberToken = new RememberTokenModel();
+
         $rememberToken->token = $token;
         $rememberToken->user_agent = DI::getDefault()->get('request')->getUserAgent();
         $rememberToken->ip = DI::getDefault()->get('request')->getClientAddress();
