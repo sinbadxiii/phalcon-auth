@@ -105,6 +105,8 @@ class UserModelProvider implements UserModelProviderInterface
          * @todo стоит ли тут вызывать ивент сохранения??
          */
         $user->save();
+
+        return $rememberToken;
     }
 
     public function validateCredentials(AuthenticatableInterface $user, array $credentials)
