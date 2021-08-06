@@ -12,12 +12,12 @@ use Sinbadxiii\PhalconAuth\User\AuthenticatableInterface;
 use Phalcon\Di;
 
 /**
- * Class Auth
- * @package Sinbadxiii\PhalconAuth\Guard
+ * Class SessionGuard
+ * @package Sinbadxiii\PhalconAuth\Guards
  */
 class SessionGuard
 {
-    use UserHelper;
+    use GuardHelper;
 
     protected $name;
     protected $session;
@@ -31,6 +31,7 @@ class SessionGuard
      * @var bool
      */
     protected $viaRemember = false;
+    protected $provider;
 
     public function __construct($name, $provider)
     {
@@ -179,8 +180,6 @@ class SessionGuard
                 date("U") + 360 * 24 * 60 * 60
             );
         }
-
-
     }
 
     protected function createRememberToken(AuthenticatableInterface $user)

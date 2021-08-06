@@ -12,19 +12,44 @@ You can see an example of an application with authorization and limit here [sinb
 <a href="https://github.com/sinbadxiii/phalcon-auth/releases"><img src="https://img.shields.io/github/release/sinbadxiii/phalcon-auth?style=flat-square" alt="Latest Version"></img></a>
 </p>
 
+Phalcon Auth позволит вам создать в своем веб-приложении систему аутентификации.
+  
+Общая суть системы аутентификации состоит в том, чтобы иметь под рукой "Охранников" (Guard), и "Поставщиков" (Provider), охранники определяют, как пользователи будут проходить аутентификацию, например с помощью стандартных Сессий, хранилища Сессий и файлов Cookie. 
+
+Провайдеры определяют, откуда будут извлекаются пользователи. По-умолчанию 
+это конечно же Phalcon\Model и строитель запросов к базе данных.
+
+![Banner](https://github.com/sinbadxiii/images/blob/master/phalcon-auth/auth-scheme.webp?raw=true)
+
+Файл конфигурации аутентификации вашего приложения должен будет либо находится в папке ваших конфигов, например config/auth.php. Либо подключаться в другом месте с доступом по ключу "auth" (`$this->config->auth`)
+
+Проведите все запросы в БД из папки db, в частности таблицы users и users_remember_tokens (может когда-нибудь дойдут руки до нормальной миграции :) )
+
+При стандартной конфигурации auth.php - defaults => guard => 'web', а driver = 'session', с помощью формы логина пользователь вводит свое имя пользователя и пароль. Если эти учетные данные верны, приложение сохранит информацию об аутентифицированном пользователе в пользовательском сеансе . Файл cookie, отправленный браузеру, содержит идентификатор сеанса, чтобы последующие запросы к приложению могли связать пользователя с правильным сеансом. После получения файла cookie сеанса приложение извлечет данные сеанса на основе идентификатора сеанса, обратите внимание, что информация аутентификации будет сохранена в сеансе, и будет считать пользователя «аутентифицированным».
+
+Второй вариант, если в конфигурации auth.php будет указано в defaults => guard => 'api', а driver = 'token', данная настройка позволит пройти проверку подлинности для доступа к вашему API приложению, файлы cookie обычно не используются для проверки подлинности из-за отсутствия веб-браузера. Вместо этого удаленная служба отправляет API-токен при каждом запросе. Приложение может проверить входящий токен по таблице допустимых токенов API и «аутентифицировать» запрос как выполняемый пользователем, связанным с этим токеном API.
 
 ## Installation
 
-Phalcon 4. PHP 7.2-8.0.
+Phalcon 4 or Phalcon 5
+
+PHP 7.2-8.0.
 
 Require the project using composer:
 
 `composer require "sinbadxiii/phalcon-auth:^v1.1.0"`
 
-
 ## How use
 
-1. register service provider `Sinbadxiii\PhalconAuth\AuthProvider`
+1. Register a service provider `Sinbadxiii\PhalconAuth\AuthProvider`
+
+```php 
+$di->setShared('auth', function () {
+    return new \Sinbadxiii\PhalconAuth\Auth();
+});
+```
+
+or 
 
 ```php
 declare(strict_types=1);
@@ -51,11 +76,40 @@ class AuthProvider implements ServiceProviderInterface
         });
     }
 }
+...
+
+$di = new FactoryDefault();
+...
+$authServiceProvider = new AuthProvider();
+$authServiceProvider->register($di); 
+
+
 ```
 
-2. implement your controllers from `Sinbadxiii\PhalconAuth\Middlewares\Accessicate`
+2. Implement your controllers from `Sinbadxiii\PhalconAuth\Middlewares\Accessicate`
 
-3. create middleware extends from `Sinbadxiii\PhalconAuth\Middlewares\Authenticate`
+```php 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use Phalcon\Mvc\Controller;
+use Sinbadxiii\PhalconAuth\Middlewares\Accessicate;
+
+class ProfileController extends Controller implements Accessicate
+{
+    ...
+    public function authAccess(): bool
+    {
+       return true; //or false, if you don't need to check authentication
+    }  
+    ...
+}
+
+
+```
+
+3. Create middleware extends from `Sinbadxiii\PhalconAuth\Middlewares\Authenticate`
 
 example:
 
@@ -95,7 +149,42 @@ class Authenticate extends AuthMiddleware
 }
 ```
 
+### Перенаправление неаутентифицированных пользователей
+
+Когда middleware обнаруживает неаутентифицированного пользователя, то выполняет метод `redirectTo()`, по умолчанию идет редирект на нужный вам url (ту же форму логина, например), вы можете изменить это поведение, например вернуть json ответ, если будет идти ajax запрос.
+
+```php
+
+protected function redirectTo()
+{
+    $this->response->setJsonContent(
+                    [
+                        'success' => false,
+                        'message' => 'Authentication failure'
+                    ], JSON_UNESCAPED_UNICODE
+                );
+
+    if (!$this->response->isSent()) {
+        $this->response->send();
+    } 
+}
+```
+
 and attach it in your dispatcher:
+
+```php
+$di->setShared("dispatcher", function () use ($di) {
+    $dispatcher = new Dispatcher();
+
+    $eventsManager = $di->getShared('eventsManager');
+    $eventsManager->attach('dispatch', new Authenticate());
+    $dispatcher->setEventsManager($eventsManager);
+
+    return $dispatcher;
+});
+```
+
+or
 
 ```php
 declare(strict_types=1);
@@ -133,7 +222,7 @@ class DispatcherProvider implements ServiceProviderInterface
 }
 ```
 
-4. Implement your model users, example:
+4. Implement your model Users, example:
 
 ```php 
 namespace Models;
@@ -189,49 +278,142 @@ class Users extends BaseModel implements AuthenticatableInterface, RememberingIn
 
 ```
 
+## Methods
+
+### Проверка аутентификации текущего пользователя
+
+Чтобы определить, аутентифицирован ли пользователь, выполняющий входящий HTTP-запрос, вы можете использовать метод `check()`. Этот метод вернет true если пользователь аутентифицирован:
+
+
 ```php
 $this->auth->check(); 
-//check authorization
+//check authentication
+```
 
-$this->user();
+### Получение аутентифицированного пользователя
+
+При обработке входящего запроса вы можете получить доступ к аутентифицированному пользователю через метод `user()`. Результатом будет провайдер, указанный в конфиге auth.php, по-стандарту Phalcon\Model Users таблицы users. 
+
+Так же можно запросить идентификатор пользователя (ID), с помощью метода `id()`
+
+
+```php 
+$this->auth->user();
 //get the user
 
-$this->id();
+$this->auth->id();
 //get user id
+```
 
-$this->auth->logout();
-//log out user
+### Попытка аутентификации 
 
+Метод `attempt()` используется для обработки попыток аутентификации из формы «входа в систему» вашего приложения.
 
+```php 
 $username = $this->request->getPost("username");
 $password = $this->request->getPost("password");
-$remember = $this->request->getPost("remember");
 
-$this->auth->attempt(['username' => $username, 'password' => $password], $remember);
 //attempt login with credentials
+if ($this->auth->attempt(['username' => $username, 'password' => $password])) {
 
+ //success attempt
+ ...
+}
 
+//fail attempt
+```
+
+Метод `attempt()` принимает массив пар ключ/значение в качестве первого аргумента. Значения в массиве будут использоваться для поиска пользователя в таблице базы данных. Итак, в приведенном выше примере пользователь будет извлечен по значению столбца username. Если пользователь найден, хешированный пароль, хранящийся в базе данных, будет сравниваться со значением password, переданным в метод. Вы не должны хешировать значение входящего запроса password, т.к. пароль уже автоматически хешируется, для сравнения его с хешированным паролем в базе данных. Сессия с аутентификацией будет запущена для пользователя, если хешированные пароли совпадают.
+
+Помните, что запрашиваться будут пользователи из вашей базы данных на основе конфигурации "провайдера". В файле конфигурации config/auth.php по умолчанию указан поставщик пользователей Phalcon\Model, и ему дано указание использовать модель \Models\User для получения пользователей. Вы можете изменить эти значения в файле конфигурации в зависимости от потребностей вашего приложения.
+
+Метод `attempt()` возвратит true если аутентификация прошла успешно. В противном случае будет возвращен false.
+
+### Указание дополнительных условий
+
+Вы также можете добавить дополнительные условия запроса в дополнение к email/username и паролю пользователя. Для этого нужно просто добавить условия запроса в массив, переданный методу `attempt()`. Например, мы можем проверить, что пользователь отмечен как «активный»:
+
+```php 
+if ($this->auth->attempt(['username' => $username, 'password' => $password, 'published' => 1], $remember)) {
+
+ //success attempt
+ ...
+}
+```
+
+### "Запомнить меня"
+
+Если вы хотите обеспечить функциональность «запомнить меня» в своем приложении, вы можете передать логическое значение в качестве второго аргумента метода attempt.
+
+Когда это значение равно true, то время аутентификация пользователя будет неопределенно долго или до тех пор, пока он не выйдет из системы вручную по logout. Таблица users_remember_tokens содержит строковый столбец token, который будет использоваться для хранения токена «запомнить меня».
+
+```php 
+$username = $this->request->getPost("username");
+$password = $this->request->getPost("password");
+$remember = this->request->getPost('remember') ? true : false;
+
+//attempt login with credentials
+if ($this->auth->attempt(['username' => $username, 'password' => $password], $remember)) {
+
+ //success attempt
+ ...
+}
+
+//fail attempt
+```
+
+Используйте метод `viaRemember()`, чтобы проверить, прошел ли пользователь аутентификацию с помощью файла cookie «запомнить меня»
+
+```php
+//use method viaRemember to check the user was authenticated using the remember me cookie
+$this->auth->viaRemember();
+```
+
+### Аутентифицировать пользовательский экземпляр
+
+Если вам нужно установить существующий пользовательский экземпляр в качестве текущего аутентифицированного пользователя, вы можете передать пользовательский экземпляр методу `login()`. Данный пользовательский экземпляр должен быть реализацией Sinbadxiii\PhalconAuth\User\AuthenticatableInterface.
+
+Этот метод аутентификации полезен, когда у вас уже есть действующий экземпляр пользователя, например, сразу после регистрации пользователя в вашем приложении:
+
+```php
 $user = Users::findFirst(1);
 // Login and Remember the given user
-$this->auth->login($user, true);
+$this->auth->login($user, $remember = true);
+```
+
+### Аутентифицировать пользователя по идентификатору
+
+Для аутентификации пользователя с использованием первичного ключа записи в базе данных вы можете использовать метод `loginById()`. Этот метод принимает первичный ключ пользователя, которого вы хотите аутентифицировать:
+
+```php
 //and force login user by id 
 $this->auth->loginById(1, true);
+```
 
+### Аутентифицировать пользователя один раз
 
+Используя метод `once()` вы можете аутентифицировать пользователя в приложении для одного запроса. При вызове этого метода не будут использоваться сессии или файлы cookie:
+
+```php
 //once auth without saving session and cookies
 $username = $this->request->getPost("username");
 $password = $this->request->getPost("password");
 $this->auth->once(['username' => $username, 'password' => $password]);
+```
 
-//use method viaRemember to check the user was authenticated using the remember me cookie
-$this->auth->viaRemember();
+## Выход
 
+Чтобы вручную разлогинить пользователя из вашего приложения, вы можете использовать метод `logout()`. После этого удалится вся информация об аутентификации из сессии пользователя, так что последующие запросы уже не будут аутентифицированы.
 
+```php
+
+$this->auth->logout();
+//log out user 
 ```
 
 ### Configuration
 
-copy file from `config/auth.php` in your folder config and merge yout config
+Copy file from `config/auth.php` in your folder config and merge yout config
 
 
 ### License

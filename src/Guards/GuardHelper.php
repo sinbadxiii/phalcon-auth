@@ -5,10 +5,10 @@ namespace Sinbadxiii\PhalconAuth\Guards;
 use Sinbadxiii\PhalconAuth\User\AuthenticatableInterface;
 
 /**
- * Trait UserHelper
+ * Trait GuardHelper
  * @package Sinbadxiii\PhalconAuth\Guard
  */
-trait UserHelper
+trait GuardHelper
 {
     protected $user;
 
@@ -17,9 +17,15 @@ trait UserHelper
      */
     public function id()
     {
-        return $this->user()->getAuthIdentifier();
+        if ($this->user()) {
+            return $this->user()->getAuthIdentifier();
+        }
     }
 
+    /**
+     * @param AuthenticatableInterface $user
+     * @return $this
+     */
     public function setUser(AuthenticatableInterface $user)
     {
         $this->user = $user;
@@ -27,21 +33,33 @@ trait UserHelper
         return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function check()
     {
         return !is_null($this->user());
     }
 
+    /**
+     * @return bool
+     */
     public function hasUser()
     {
         return !is_null($this->user);
     }
 
+    /**
+     * @return mixed
+     */
     public function getUser()
     {
         return $this->user;
     }
 
+    /**
+     * @return bool
+     */
     public function guest()
     {
         return ! $this->check();

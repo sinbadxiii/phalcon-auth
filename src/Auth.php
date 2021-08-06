@@ -16,9 +16,12 @@ class Auth
     protected $config;
     protected $guards = [];
 
-    public function __construct()
+    public function __construct($config = null)
     {
-        $this->config = Di::getDefault()->getShared("config")->auth;
+        if (is_null($config)) {
+            $config = Di::getDefault()->getShared("config")->auth;
+        }
+        $this->config = $config;
     }
 
     /**
