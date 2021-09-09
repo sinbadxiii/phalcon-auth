@@ -37,6 +37,11 @@ class Authenticate extends Injectable implements AuthenticatesRequest
         //custom url
     }
 
+    protected function setGuest($guest)
+    {
+        $this->guest = $guest;
+    }
+
     protected function isGuest()
     {
         $controller = $this->dispatcher->getControllerClass();
