@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Guards;
 
+use Sinbadxiii\PhalconAuth\Contracts\Guard;
 use Sinbadxiii\PhalconAuth\Events\EventInterface;
 use Phalcon\Helper\Str;
 use Phalcon\Di;
@@ -12,7 +13,7 @@ use Phalcon\Di;
  * Class TokenGuard
  * @package Sinbadxiii\PhalconAuth\Guards
  */
-class TokenGuard
+class TokenGuard implements Guard
 {
     use GuardHelper;
 

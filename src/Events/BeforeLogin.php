@@ -6,5 +6,4 @@ namespace Sinbadxiii\PhalconAuth\Events;
 
 class BeforeLogin extends EventAbstract
 {
-
 }

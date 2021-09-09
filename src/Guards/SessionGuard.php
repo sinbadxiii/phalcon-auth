@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Guards;
 
-use Sinbadxiii\PhalconAuth\Events\BeforeLogin;
+use Sinbadxiii\PhalconAuth\Contracts\GuardStateful;
 use Sinbadxiii\PhalconAuth\Events\AfterLogin;
+use Sinbadxiii\PhalconAuth\Events\BeforeLogin;
+use Sinbadxiii\PhalconAuth\Events\Attempt;
 use Sinbadxiii\PhalconAuth\Events\EventInterface;
 use Sinbadxiii\PhalconAuth\Events\Logout;
 use Sinbadxiii\PhalconAuth\User\AuthenticatableInterface;
@@ -15,7 +17,7 @@ use Phalcon\Di;
  * Class SessionGuard
  * @package Sinbadxiii\PhalconAuth\Guards
  */
-class SessionGuard
+class SessionGuard implements GuardStateful
 {
     use GuardHelper;
 

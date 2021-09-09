@@ -6,7 +6,6 @@ return [
             'guard' => 'web',
             'passwords' => 'users',
         ],
-
         'guards' => [
             'web' => [
                 'driver' => 'session',

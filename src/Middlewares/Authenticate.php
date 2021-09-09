@@ -4,17 +4,23 @@ namespace Sinbadxiii\PhalconAuth\Middlewares;
 
 use Phalcon\Di\Injectable;
 
-class Authenticate extends Injectable
+class Authenticate extends Injectable implements AuthenticatesRequest
 {
-    /**
-     * @description custom controller property
-     * for disable auth check into controller
-     */
-    protected $guest = false;
+    protected $dispatcher;
 
     public function beforeExecuteRoute($event, $dispatcher)
     {
-        if ($this->auth->check() || $this->isGuest()) {
+        $this->dispatcher = $dispatcher;
+
+        $this->authenticate();
+    }
+
+    /**
+     * @return bool
+     */
+    protected function authenticate()
+    {
+        if ($this->auth->authenticate() || $this->isGuest()) {
             return true;
         }
 
@@ -31,14 +37,10 @@ class Authenticate extends Injectable
         //custom url
     }
 
-    protected function setGuest($guest)
-    {
-        $this->guest = $guest;
-    }
-
     protected function isGuest()
     {
-        return $this->guest;
+        $controller = $this->dispatcher->getControllerClass();
+
+        return !(new $controller)->authAccess();
     }
 }
-

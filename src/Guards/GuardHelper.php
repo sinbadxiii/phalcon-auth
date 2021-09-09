@@ -64,4 +64,11 @@ trait GuardHelper
     {
         return ! $this->check();
     }
+
+    public function authenticate()
+    {
+        if (!is_null($user = $this->user())) {
+            return $user;
+        }
+    }
 }

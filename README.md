@@ -49,7 +49,7 @@ $di->setShared('auth', function () {
 });
 ```
 
-or 
+or
 
 ```php
 declare(strict_types=1);

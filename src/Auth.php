@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth;
 
+use Closure;
 use InvalidArgumentException;
+use Phalcon\Config;
 use Phalcon\Di;
 
 /**
@@ -14,6 +16,7 @@ use Phalcon\Di;
 class Auth
 {
     protected $config;
+    protected $customGuards = [];
     protected $guards = [];
 
     public function __construct($config = null)
@@ -28,7 +31,7 @@ class Auth
      * @param $name
      * @return array
      */
-    protected function getConfigGuard(string $name): object
+    protected function getConfigGuard(string $name)
     {
         return $this->config->guards->{$name};
     }
@@ -50,10 +53,15 @@ class Auth
      */
     protected function resolve($name)
     {
+
         $configGuard = $this->getConfigGuard($name);
 
         if (is_null($configGuard)) {
             throw new InvalidArgumentException("Auth guard [{$name}] is not defined.");
+        }
+
+        if (isset($this->customGuards[$configGuard['driver']])) {
+            return $this->callCustomGuard($name, $configGuard);
         }
 
         $className = sprintf("\\%s\\Guards\\%sGuard",
@@ -102,5 +110,17 @@ class Auth
     public function __call($method, $params)
     {
         return $this->guard()->{$method}(...$params);
+    }
+
+    public function extend($driver, Closure $callback)
+    {
+        $this->customGuards[$driver] = $callback;
+
+        return $this;
+    }
+
+    protected function callCustomGuard($name, Config $config)
+    {
+        return $this->customGuards[$config['driver']]($name, $config);
     }
 }
