@@ -127,17 +127,6 @@ use Sinbadxiii\PhalconAuth\Middlewares\Authenticate as AuthMiddleware;
 class Authenticate extends AuthMiddleware
 {
     /**
-     * @param $event
-     * @param $dispatcher
-     */
-    public function beforeDispatch($event, $dispatcher)
-    {
-        $controller = $dispatcher->getControllerClass();
-
-        $this->setGuest(!(new $controller)->authAccess());
-    }
-
-    /**
      * @return \Phalcon\Http\ResponseInterface|void
      */
     protected function redirectTo()

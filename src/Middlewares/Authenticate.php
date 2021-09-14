@@ -8,7 +8,7 @@ class Authenticate extends Injectable implements AuthenticatesRequest
 {
     protected $dispatcher;
 
-    public function beforeExecuteRoute($event, $dispatcher)
+    public function beforeDispatch($event, $dispatcher)
     {
         $this->dispatcher = $dispatcher;
 
