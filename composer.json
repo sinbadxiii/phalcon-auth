@@ -1,6 +1,6 @@
 {
   "name": "sinbadxiii/phalcon-auth",
-  "description": "Simple Auth For Phalcon",
+  "description": "Phalcon Auth - Guard-Based Authentication",
   "keywords": ["phalcon", "framework", "auth", "authorization", "Phalcon Auth"],
   "license": "MIT",
   "authors": [

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Guards;
 
+use Phalcon\Http\Request;
+use Sinbadxiii\PhalconAuth\Contracts\BasicAuth;
 use Sinbadxiii\PhalconAuth\Contracts\GuardStateful;
 use Sinbadxiii\PhalconAuth\Events\AfterLogin;
 use Sinbadxiii\PhalconAuth\Events\BeforeLogin;
-use Sinbadxiii\PhalconAuth\Events\Attempt;
 use Sinbadxiii\PhalconAuth\Events\EventInterface;
 use Sinbadxiii\PhalconAuth\Events\Logout;
 use Sinbadxiii\PhalconAuth\User\AuthenticatableInterface;
@@ -17,9 +18,10 @@ use Phalcon\Di;
  * Class SessionGuard
  * @package Sinbadxiii\PhalconAuth\Guards
  */
-class SessionGuard implements GuardStateful
+class SessionGuard implements GuardStateful, BasicAuth
 {
     use GuardHelper;
+    use BasicHelper;
 
     protected $name;
     protected $session;
@@ -43,7 +45,7 @@ class SessionGuard implements GuardStateful
         $this->session        = Di::getDefault()->getShared("session");
         $this->cookies        = Di::getDefault()->getShared("cookies");
         $this->eventsManager  = Di::getDefault()->getShared("eventsManager");
-        $this->request        = Di::getDefault()->getShared("request");
+        $this->request        = $this->getRequest();
     }
 
     public function attempt(array $credentials = [], $remember = false)
@@ -226,5 +228,22 @@ class SessionGuard implements GuardStateful
     public function viaRemember()
     {
         return $this->viaRemember;
+    }
+
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    public function getRequest(): Request
+    {
+        return $this->request ?: Di::getDefault()->getShared("request");
+    }
+
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
+
+        return $this;
     }
 }

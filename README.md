@@ -29,6 +29,9 @@ Phalcon Auth позволит вам создать в своем веб-при�
 
 Второй вариант, если в конфигурации auth.php будет указано в defaults => guard => 'api', а driver = 'token', данная настройка позволит пройти проверку подлинности для доступа к вашему API приложению, файлы cookie обычно не используются для проверки подлинности из-за отсутствия веб-браузера. Вместо этого удаленная служба отправляет API-токен при каждом запросе. Приложение может проверить входящий токен по таблице допустимых токенов API и «аутентифицировать» запрос как выполняемый пользователем, связанным с этим токеном API.
 
+## Extended guards
+* [JWT Guard](https://github.com/sinbadxiii/phalcon-auth-jwt)
+
 ## Installation
 
 Phalcon 4 or Phalcon 5
@@ -400,9 +403,169 @@ $this->auth->logout();
 //log out user 
 ```
 
+## HTTP Basic Authentication
+
+[Базовая аутентификация HTTP](https://en.wikipedia.org/wiki/Basic_access_authentication) обеспечивает быстрый способ аутентификации пользователей вашего приложения без настройки специальной страницы «входа в систему». Достаточно передать в заголовке `Authorization`, значение `Basic` и пары емейл (либо другое поле пользователя) и пароль, разделенные двоеточием и закодированые `base64_encode()` 
+
+Для начала создайте middleware типа AuthBasic с методом `$this->auth->basic("email")`и прикрепите к сервис-провайдеру dispatcher, как было указано выше.
+
+Аргумент `email` указывает на то, что поиск пользователя будет осуществляться по полям email и password. Указав другое поле, например `username`, поиск будет осуществляться по паре username и password.
+
+```php
+$di->setShared("dispatcher", function () use ($di) {
+    $dispatcher = new Dispatcher();
+
+    $eventsManager = $di->getShared('eventsManager');
+    $eventsManager->attach('dispatch', new AuthenticateWithBasic());
+    $dispatcher->setEventsManager($eventsManager);
+
+    return $dispatcher;
+});
+```
+
+Пример, использования
+
+```php 
+<?php
+
+declare(strict_types=1);
+
+namespace App\Security;
+
+use Sinbadxiii\PhalconAuth\Middlewares\Authenticate as AuthMiddleware;
+
+/**
+ * Class Authenticate
+ * @package App\Security
+ */
+class AuthenticateWithBasic extends AuthMiddleware
+{
+    /**
+     * @var
+     */
+    protected $message;
+
+    /**
+     * @return bool
+     */
+    protected function authenticate()
+    {
+        try {
+            if ($this->auth->basic("email") || $this->isGuest()) {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            $this->message = $e->getMessage();
+        }
+        $this->unauthenticated();
+    }
+
+    /**
+     * @return \Phalcon\Http\ResponseInterface|void
+     */
+    protected function redirectTo()
+    {
+        if (isset($this->response)) {
+            $this->response->setJsonContent(
+                [
+                    'message' => $this->message ?? "Unauthorized Error"
+                ]
+            )->setStatusCode(401)->send();
+        }
+    }
+}
+
+```
+
+После запроса, в сессию запишется пользователь, и последующие запросы, могут уже не содержать пользовательские данные в заголовке `Authorization`, до тех пор пока сессия не "стухнет".
+
+### Basic HTTP-аутентификация без сохранения состояния
+
+Вы можете использовать базовую аутентификацию HTTP без сохранения пользователя в сессии. Это в первую очередь полезно, если вы решите использовать HTTP-аутентификацию для аутентификации запросов к API вашего приложения. Для этого определите промежуточное программное обеспечение, которое вызывает метод `onceBasic()`, например:
+
+```php 
+<?php
+
+declare(strict_types=1);
+
+namespace App\Security;
+
+use Sinbadxiii\PhalconAuth\Middlewares\Authenticate as AuthMiddleware;
+
+/**
+ * Class Authenticate
+ * @package App\Security
+ */
+class AuthenticateWithBasic extends AuthMiddleware
+{
+    /**
+     * @var
+     */
+    protected $message;
+
+    /**
+     * @return bool
+     */
+    protected function authenticate()
+    {
+        try {
+            if ($this->auth->onceBasic("email") || $this->isGuest()) {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            $this->message = $e->getMessage();
+        }
+        $this->unauthenticated();
+    }
+
+    /**
+     * @return \Phalcon\Http\ResponseInterface|void
+     */
+    protected function redirectTo()
+    {
+        if (isset($this->response)) {
+            $this->response->setJsonContent(
+                [
+                    'message' => $this->message ?? "Unauthorized Error"
+                ]
+            )->setStatusCode(401)->send();
+        }
+    }
+}
+```
+После запроса, ни куки, ни сессия не будут содержать данные о пользователе, и следущий запрос так же должен содержать пользовательские данные заголовка `Authorization`, иначе будет вызвано исключение `Sinbadxiii\PhalconAuth\Exceptions\UnauthorizedHttpException;`
+
 ### Configuration
 
-Copy file from `config/auth.php` in your folder config and merge yout config
+Copy file from `config/auth.php` in your folder config and merge your config
+
+```php 
+
+...
+'auth' => [
+        'defaults' => [
+            'guard' => 'web',
+            'passwords' => 'users',
+        ],
+        'guards' => [
+            'web' => [
+                'driver' => 'session',
+                'provider' => 'users',
+            ],
+        ],
+        'providers' => [
+            'users' => [
+                'driver' => 'model',
+                'model'  => \Models\Users::class,
+            ],
+        ],
+        'hash' => [
+            'method' => 'sha1'
+        ],
+    ],
+..
+
+```
 
 
 ### License
