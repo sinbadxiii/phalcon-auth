@@ -1,8 +1,10 @@
 <?php
 
-namespace Sinbadxiii\PhalconAuth\User;
+namespace Sinbadxiii\PhalconAuth\Providers\Users;
 
-interface UserModelProviderInterface
+use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
+
+interface UsersProviderInterface
 {
     public function retrieveByCredentials(array $credentials);
     public function retrieveById($id);

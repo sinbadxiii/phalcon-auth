@@ -12,6 +12,17 @@ You can see an example of an application with authorization and limit here [sinb
 <a href="https://github.com/sinbadxiii/phalcon-auth/releases"><img src="https://img.shields.io/github/release/sinbadxiii/phalcon-auth?style=flat-square" alt="Latest Version"></img></a>
 </p>
 
+- ~~*Стандартная аутентификация на основе сессий и кук*~~
+- ~~*Аутентификация на основе токена*~~
+- ~~*Расширение кастомными guard'ами*~~
+- ~~*Гостевой доступ к контроллерам*~~
+- ~~*[Аутентификация с помощью JWT](https://github.com/sinbadxiii/phalcon-auth-jwt)*~~
+- ~~*HTTP Basic аутентификацция*~~
+- Активация по email (требуется стандартизировать работу с почтой)
+- Восстановление пароля(требуется стандартизировать работу с почтой)
+- Тесты
+- Перевод документации на английский язык
+
 Phalcon Auth позволит вам создать в своем веб-приложении систему аутентификации.
   
 Общая суть системы аутентификации состоит в том, чтобы иметь под рукой "Охранников" (Guard), и "Поставщиков" (Provider), охранники определяют, как пользователи будут проходить аутентификацию, например с помощью стандартных Сессий, хранилища Сессий и файлов Cookie. 
@@ -220,7 +231,7 @@ class DispatcherProvider implements ServiceProviderInterface
 namespace Models;
 
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
-use Sinbadxiii\PhalconAuth\User\AuthenticatableInterface;
+use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberToken\RememberingInterface;
 
 class Users extends BaseModel implements AuthenticatableInterface, RememberingInterface
@@ -363,7 +374,7 @@ $this->auth->viaRemember();
 
 ### Аутентифицировать пользовательский экземпляр
 
-Если вам нужно установить существующий пользовательский экземпляр в качестве текущего аутентифицированного пользователя, вы можете передать пользовательский экземпляр методу `login()`. Данный пользовательский экземпляр должен быть реализацией Sinbadxiii\PhalconAuth\User\AuthenticatableInterface.
+Если вам нужно установить существующий пользовательский экземпляр в качестве текущего аутентифицированного пользователя, вы можете передать пользовательский экземпляр методу `login()`. Данный пользовательский экземпляр должен быть реализацией Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface.
 
 Этот метод аутентификации полезен, когда у вас уже есть действующий экземпляр пользователя, например, сразу после регистрации пользователя в вашем приложении:
 

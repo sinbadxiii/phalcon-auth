@@ -2,8 +2,6 @@
 
 namespace Sinbadxiii\PhalconAuth\Contracts;
 
-use Sinbadxiii\PhalconAuth\User\AuthenticatableInterface;
-
 interface GuardStateful
 {
     public function attempt(array $credentials = [], $remember = false);

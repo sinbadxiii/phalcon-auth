@@ -2,7 +2,7 @@
 
 namespace Sinbadxiii\PhalconAuth\Guards;
 
-use Sinbadxiii\PhalconAuth\User\AuthenticatableInterface;
+use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 
 /**
  * Trait GuardHelper

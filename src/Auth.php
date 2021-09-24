@@ -68,8 +68,8 @@ class Auth
             __NAMESPACE__,
             ucfirst($configGuard->driver));
 
-        $provider = $this->createUserProvider($configGuard ?? null);
 
+        $provider = $this->createProvider($configGuard ?? null);
         $guard = new $className($name, $provider);
 
         if (class_exists($className)) {
@@ -81,16 +81,16 @@ class Auth
         );
     }
 
-    public function createUserProvider($configGuard = null)
+    public function createProvider($configGuard = null)
     {
-        $driver = sprintf("\\%s\\User\\User%sProvider",
-            __NAMESPACE__,
+        $driver = sprintf("\\%s\\Providers\\%s%sProvider",
+            __NAMESPACE__, ucfirst($configGuard->provider),
             ucfirst($this->config->providers->{$configGuard->provider}->driver)
         );
 
         return new $driver(
             Di::getDefault()->getShared("security"),
-            $this->config->providers->{$configGuard->provider}->model
+            $this->config->providers->{$configGuard->provider}
         );
     }
 

@@ -11,7 +11,7 @@ use Sinbadxiii\PhalconAuth\Events\AfterLogin;
 use Sinbadxiii\PhalconAuth\Events\BeforeLogin;
 use Sinbadxiii\PhalconAuth\Events\EventInterface;
 use Sinbadxiii\PhalconAuth\Events\Logout;
-use Sinbadxiii\PhalconAuth\User\AuthenticatableInterface;
+use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Phalcon\Di;
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Sinbadxiii\PhalconAuth\User;
+namespace Sinbadxiii\PhalconAuth\Contracts;
 
 interface AuthenticatableInterface
 {

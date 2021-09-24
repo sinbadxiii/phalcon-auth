@@ -1,26 +1,28 @@
 <?php
 
-namespace Sinbadxiii\PhalconAuth\User;
+namespace Sinbadxiii\PhalconAuth\Providers;
 
+use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
+use Sinbadxiii\PhalconAuth\Providers\Users\UsersProviderInterface;
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
 use Phalcon\Di;
 use Phalcon\Security\Random;
 
-class UserModelProvider implements UserModelProviderInterface
+class UsersModelProvider implements UsersProviderInterface
 {
     protected $model;
 
     protected $hasher;
 
     /**
-     * UserModelProvider constructor.
+     * UsersModelProvider constructor.
      * @param $hasher
-     * @param $model
+     * @param $config
      */
-    public function __construct($hasher, $model)
+    public function __construct($hasher, $config)
     {
         $this->hasher = $hasher;
-        $this->model  = $model;
+        $this->model  = $config->model;
     }
 
     public function retrieveByCredentials(array $credentials)
@@ -42,35 +44,24 @@ class UserModelProvider implements UserModelProviderInterface
 
     public function retrieveById($identifier)
     {
+        return $this->model::findFirst($identifier);
+
         /**
          * @todo придумать как не жестко привязывать к id
          */
-
-
-        return $this->model::findFirst($identifier);
-
-
-
-        return DI::getDefault()->get('modelsManager')
-            ->createBuilder()
-            ->from(['m' =>$this->model])
-            ->where("m.id = :id:",
-            [
-                "id" => $identifier
-            ])
-            ->getQuery()->execute()->getFirst();
+//        return DI::getDefault()->get('modelsManager')
+//            ->createBuilder()
+//            ->from(['m' =>$this->model])
+//            ->where("m.id = :id:",
+//            [
+//                "id" => $identifier
+//            ])
+//            ->getQuery()->execute()->getFirst();
     }
 
     public function retrieveByToken($identifier, $token, $user_agent)
     {
-        $retrievedModel = DI::getDefault()->get('modelsManager')
-            ->createBuilder()
-            ->from($this->model)
-            ->where("id = :id:",
-                [
-                    "id" => $identifier
-                ])
-            ->getQuery()->execute()->getFirst();
+        $retrievedModel = $this->model::findFirst($identifier);
 
         if (!$retrievedModel) {
             return;
