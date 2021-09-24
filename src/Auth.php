@@ -83,8 +83,8 @@ class Auth
 
     public function createProvider($configGuard = null)
     {
-        $driver = sprintf("\\%s\\Providers\\%s%sProvider",
-            __NAMESPACE__, ucfirst($configGuard->provider),
+        $driver = sprintf("\\%s\\Providers\\%sProvider",
+            __NAMESPACE__,
             ucfirst($this->config->providers->{$configGuard->provider}->driver)
         );
 

@@ -3,12 +3,11 @@
 namespace Sinbadxiii\PhalconAuth\Providers;
 
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
-use Sinbadxiii\PhalconAuth\Providers\Users\UsersProviderInterface;
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
 use Phalcon\Di;
 use Phalcon\Security\Random;
 
-class UsersModelProvider implements UsersProviderInterface
+class ModelProvider implements ProviderInterface
 {
     protected $model;
 

@@ -4,7 +4,6 @@ namespace Sinbadxiii\PhalconAuth\Providers;
 
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\Providers\Users\File\Parser;
-use Sinbadxiii\PhalconAuth\Providers\Users\UsersProviderInterface;
 use Sinbadxiii\PhalconAuth\Users\User;
 use Sinbadxiii\PhalconAuth\Users\UsersCollection;
 
@@ -12,7 +11,7 @@ use Sinbadxiii\PhalconAuth\Users\UsersCollection;
  * Class UsersFileProvider
  * @package Sinbadxiii\PhalconAuth\Providers
  */
-class UsersFileProvider implements UsersProviderInterface
+class FileProvider implements ProviderInterface
 {
     protected UsersCollection $collection;
     private $config;
