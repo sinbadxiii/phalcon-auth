@@ -15,16 +15,30 @@ use Phalcon\Di;
  */
 class Auth
 {
+    /**
+     * @var mixed
+     */
     protected $config;
+
+    /**
+     * @var mixed
+     */
+    protected $security;
+
+    /**
+     * @var array
+     */
     protected $customGuards = [];
+
+    /**
+     * @var array
+     */
     protected $guards = [];
 
-    public function __construct($config = null)
+    public function __construct($config = null, $security = null)
     {
-        if (is_null($config)) {
-            $config = Di::getDefault()->getShared("config")->auth;
-        }
-        $this->config = $config;
+        $this->config = $config ?? Di::getDefault()->getShared("config")->auth;
+        $this->security = $security ?? Di::getDefault()->getShared("security");
     }
 
     /**
@@ -53,7 +67,6 @@ class Auth
      */
     protected function resolve($name)
     {
-
         $configGuard = $this->getConfigGuard($name);
 
         if (is_null($configGuard)) {
@@ -89,7 +102,7 @@ class Auth
         );
 
         return new $driver(
-            Di::getDefault()->getShared("security"),
+            $this->security,
             $this->config->providers->{$configGuard->provider}
         );
     }
@@ -102,16 +115,6 @@ class Auth
         return $this->config->defaults->guard;
     }
 
-    /**
-     * @param $method
-     * @param $params
-     * @return mixed
-     */
-    public function __call($method, $params)
-    {
-        return $this->guard()->{$method}(...$params);
-    }
-
     public function extend($driver, Closure $callback)
     {
         $this->customGuards[$driver] = $callback;
@@ -122,5 +125,15 @@ class Auth
     protected function callCustomGuard($name, Config $config)
     {
         return $this->customGuards[$config['driver']]($name, $config);
+    }
+
+    /**
+     * @param $method
+     * @param $params
+     * @return mixed
+     */
+    public function __call($method, $params)
+    {
+        return $this->guard()->{$method}(...$params);
     }
 }

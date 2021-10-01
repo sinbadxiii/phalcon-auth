@@ -3,11 +3,19 @@
 namespace Sinbadxiii\PhalconAuth\Middlewares;
 
 use Phalcon\Di\Injectable;
+use Phalcon\Mvc\Dispatcher;
 
 class Authenticate extends Injectable implements AuthenticatesRequest
 {
-    protected $dispatcher;
+    /**
+     * @var
+     */
+    protected Dispatcher $dispatcher;
 
+    /**
+     * @param $event
+     * @param $dispatcher
+     */
     public function beforeDispatch($event, $dispatcher)
     {
         $this->dispatcher = $dispatcher;

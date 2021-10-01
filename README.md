@@ -20,7 +20,6 @@ You can see an example of an application with authorization and limit here [sinb
 - ~~*HTTP Basic аутентификацция*~~
 - Активация по email (требуется стандартизировать работу с почтой)
 - Восстановление пароля(требуется стандартизировать работу с почтой)
-- Тесты
 - Перевод документации на английский язык
 
 Phalcon Auth позволит вам создать в своем веб-приложении систему аутентификации.
@@ -45,9 +44,11 @@ Phalcon Auth позволит вам создать в своем веб-при�
 
 ## Installation
 
-Phalcon 4 or Phalcon 5
+ | Phalcon 3   | Phalcon 4     | Phalcon 5     | Phalcon 6
+ :-------------| :-------------| :-------------| :----------
+ | :x:         | :heavy_check_mark:| :heavy_check_mark: | :question:
 
-PHP 7.2-8.0.
+PHP ^7.4-8.0.
 
 Require the project using composer:
 
@@ -152,27 +153,6 @@ class Authenticate extends AuthMiddleware
 }
 ```
 
-### Перенаправление неаутентифицированных пользователей
-
-Когда middleware обнаруживает неаутентифицированного пользователя, то выполняет метод `redirectTo()`, по умолчанию идет редирект на нужный вам url (ту же форму логина, например), вы можете изменить это поведение, например вернуть json ответ, если будет идти ajax запрос.
-
-```php
-
-protected function redirectTo()
-{
-    $this->response->setJsonContent(
-                    [
-                        'success' => false,
-                        'message' => 'Authentication failure'
-                    ], JSON_UNESCAPED_UNICODE
-                );
-
-    if (!$this->response->isSent()) {
-        $this->response->send();
-    } 
-}
-```
-
 and attach it in your dispatcher:
 
 ```php
@@ -225,14 +205,36 @@ class DispatcherProvider implements ServiceProviderInterface
 }
 ```
 
-4. Implement your model Users, example:
+### Перенаправление неаутентифицированных пользователей
+
+Когда middleware обнаруживает неаутентифицированного пользователя, то выполняет метод `redirectTo()`, по умолчанию редирект идет на нужный вам url (ту же форму логина, например), вы можете изменить это поведение, например вернуть json ответ, если для аутентификации используеся ajax запрос.
+
+```php
+
+protected function redirectTo()
+{
+    $this->response->setJsonContent(
+                    [
+                        'success' => false,
+                        'message' => 'Authentication failure'
+                    ], JSON_UNESCAPED_UNICODE
+                );
+
+    if (!$this->response->isSent()) {
+        $this->response->send();
+    } 
+}
+```
+
+4. Implement your model Users fom AuthenticatableInterface and RememberingInterface, example:
 
 ```php 
 namespace Models;
 
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
-use Sinbadxiii\PhalconAuth\RememberToken\RememberingInterface;
+use Sinbadxiii\PhalconAuth\Contracts\RememberingInterface;
+use Sinbadxiii\PhalconAuth\Contracts\RememberTokenterface;
 
 class Users extends BaseModel implements AuthenticatableInterface, RememberingInterface
 {
@@ -265,7 +267,7 @@ class Users extends BaseModel implements AuthenticatableInterface, RememberingIn
         return $this->password;
     }
 
-    public function getRememberToken(string $token = null)
+    public function getRememberToken(string $token = null): RememberTokenterface
     {
         return $this->getRelated('remember_token', [
             'token=:token:',
@@ -273,7 +275,7 @@ class Users extends BaseModel implements AuthenticatableInterface, RememberingIn
         ]);
     }
 
-    public function setRememberToken($value)
+    public function setRememberToken(RememberTokenterface $value)
     {
         $this->remember_token = $value;
     }
@@ -467,7 +469,7 @@ class AuthenticateWithBasic extends AuthMiddleware
             }
         } catch (\Throwable $e) {
             $this->message = $e->getMessage();
-        }
+        } 
         $this->unauthenticated();
     }
 
@@ -569,14 +571,35 @@ Copy file from `config/auth.php` in your folder config and merge your config
                 'driver' => 'model',
                 'model'  => \Models\Users::class,
             ],
-        ],
-        'hash' => [
-            'method' => 'sha1'
-        ],
+//          'users' => [
+//               'driver' => 'file',
+//               'path'  => __DIR__ . "/users.json",
+//               'passsword_crypted' => false
+//          ],
+        ]
     ],
 ..
 
 ```
+
+Если в качестве источника пользователей будет выбрана не `model`, а `file`, то необходимо будет указать путь к .json файлу в `path`, формата например:
+
+```json
+ {
+    "0":{"name":"admin","password": "admin","email": "admin@admin.ru"},
+    "1":{"name":"admin1","password": "admin1","email": "admin1@admin1.ru"}
+ }
+```
+
+или если включено шифрование паролей в `password_crypted`, то указывать пароль в зашифрованном виде:
+
+```json
+ {
+   "0":{"name":"admin1","password": "$2y$10$ME02QlQxWGdDNUdiUTJucuhQHYQlIglb3lG2rfdzvK3UbQXAPrc.q","email": "admin1@admin1.ru"}
+ }
+```
+
+Шифровать пароль необходимо будет с помощью `$this->security->hash()`, который вы используете у себя в приложении. 
 
 
 ### License

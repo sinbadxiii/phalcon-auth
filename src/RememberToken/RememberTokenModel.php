@@ -6,8 +6,9 @@ namespace Sinbadxiii\PhalconAuth\RememberToken;
 
 use Phalcon\Di;
 use Phalcon\Mvc\Model;
+use Sinbadxiii\PhalconAuth\Contracts\RememberTokenterface;
 
-class RememberTokenModel extends Model
+class RememberTokenModel extends Model implements  RememberTokenterface
 {
     /**
      * @var integer
@@ -86,12 +87,12 @@ class RememberTokenModel extends Model
         $this->updated_at = date(DATE_ATOM);
     }
 
-    public function getToken()
+    public function getToken(): string
     {
         return $this->token;
     }
 
-    public function getUserAgent()
+    public function getUserAgent(): string
     {
         return $this->user_agent;
     }

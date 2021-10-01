@@ -16,6 +16,8 @@ class AuthProvider implements ServiceProviderInterface
 
     /**
      * @param DiInterface $di
+     * @param null $config
+     * @param null $security
      */
     public function register(DiInterface $di): void
     {
