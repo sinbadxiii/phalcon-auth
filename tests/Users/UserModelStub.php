@@ -27,7 +27,7 @@ class UserModelStub implements AuthenticatableInterface, RememberingInterface
         $this->password;
     }
 
-    public function getRememberToken(): RememberTokenterface
+    public function getRememberToken()
     {
         return $this->remember_token;
     }
