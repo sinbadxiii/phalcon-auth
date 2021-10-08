@@ -9,7 +9,7 @@ CREATE TABLE `users` (
     `email` varchar(100) NOT NULL,
     `password` varchar(255) NOT NULL,
     `published` tinyint(1) NOT NULL DEFAULT '0',
-    `created_at` timestamp NULL
+    `created_at` timestamp NULL,
     `updated_at` timestamp NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
