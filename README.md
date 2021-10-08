@@ -234,7 +234,7 @@ namespace Models;
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\Contracts\RememberingInterface;
-use Sinbadxiii\PhalconAuth\Contracts\RememberTokenterface;
+use Sinbadxiii\PhalconAuth\Contracts\RememberTokenInterface;
 
 class Users extends BaseModel implements AuthenticatableInterface, RememberingInterface
 {
@@ -267,7 +267,7 @@ class Users extends BaseModel implements AuthenticatableInterface, RememberingIn
         return $this->password;
     }
 
-    public function getRememberToken(string $token = null): RememberTokenterface
+    public function getRememberToken(string $token = null): RememberTokenInterface
     {
         return $this->getRelated('remember_token', [
             'token=:token:',
@@ -275,7 +275,7 @@ class Users extends BaseModel implements AuthenticatableInterface, RememberingIn
         ]);
     }
 
-    public function setRememberToken(RememberTokenterface $value)
+    public function setRememberToken(RememberTokenInterface $value)
     {
         $this->remember_token = $value;
     }
