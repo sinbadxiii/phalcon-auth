@@ -4,6 +4,6 @@ namespace Sinbadxiii\PhalconAuth\Contracts;
 
 interface RememberingInterface
 {
-    public function getRememberToken();
+    public function getRememberToken(): ?RememberTokenInterface;
     public function setRememberToken(RememberTokenInterface $value);
 }

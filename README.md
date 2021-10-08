@@ -231,6 +231,7 @@ protected function redirectTo()
 ```php 
 namespace Models;
 
+use Phalcon\Di;
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\Contracts\RememberingInterface;
@@ -255,6 +256,12 @@ class Users extends BaseModel implements AuthenticatableInterface, RememberingIn
         $this->keepSnapshots(true);
     }
     
+    public function setPassword(string $password)
+    {
+        $this->password = Di::getDefault()->getShared("security")->hash($password);
+        return $this;
+    }
+    
    ...
 
     public function getAuthIdentifier()
@@ -267,7 +274,11 @@ class Users extends BaseModel implements AuthenticatableInterface, RememberingIn
         return $this->password;
     }
 
-    public function getRememberToken(string $token = null): RememberTokenInterface
+    /**
+    * @param string|null $token
+    * @return RememberTokenInterface|null|false
+    */
+    public function getRememberToken(string $token = null): ?RememberTokenInterface
     {
         return $this->getRelated('remember_token', [
             'token=:token:',
