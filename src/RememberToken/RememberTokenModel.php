@@ -6,9 +6,9 @@ namespace Sinbadxiii\PhalconAuth\RememberToken;
 
 use Phalcon\Di;
 use Phalcon\Mvc\Model;
-use Sinbadxiii\PhalconAuth\Contracts\RememberTokenterface;
+use Sinbadxiii\PhalconAuth\Contracts\RememberTokenInterface;
 
-class RememberTokenModel extends Model implements  RememberTokenterface
+class RememberTokenModel extends Model implements  RememberTokenInterface
 {
     /**
      * @var integer
