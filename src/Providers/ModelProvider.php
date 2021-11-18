@@ -5,7 +5,6 @@ namespace Sinbadxiii\PhalconAuth\Providers;
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
 use Phalcon\Di;
-use Phalcon\Security\Random;
 
 class ModelProvider implements ProviderInterface
 {
@@ -81,7 +80,12 @@ class ModelProvider implements ProviderInterface
 
     public function createRememberToken(AuthenticatableInterface $user)
     {
-        $random = new Random();
+        if (class_exists("\Phalcon\Security\Random")) {
+            $random = new \Phalcon\Security\Random();
+        }
+        if (class_exists("\Phalcon\Encryption\Security\Random")) {
+            $random = new \Phalcon\Encryption\Security\Random();
+        }
         $token = $random->base64(60);
 
         $rememberToken = new RememberTokenModel();
