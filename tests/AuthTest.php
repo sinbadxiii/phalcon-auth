@@ -2,8 +2,8 @@
 
 namespace Sinbadxiii\PhalconAuth\Tests;
 
-use Phalcon\Config;
-use Phalcon\Security;
+use Phalcon\Config\Config;
+use Phalcon\Encryption\Security;
 use Sinbadxiii\PhalconAuth\Auth;
 
 /**

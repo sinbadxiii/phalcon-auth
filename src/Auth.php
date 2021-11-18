@@ -6,7 +6,6 @@ namespace Sinbadxiii\PhalconAuth;
 
 use Closure;
 use InvalidArgumentException;
-use Phalcon\Config;
 use Phalcon\Di;
 
 /**
@@ -122,7 +121,7 @@ class Auth
         return $this;
     }
 
-    protected function callCustomGuard($name, Config $config)
+    protected function callCustomGuard($name, $config)
     {
         return $this->customGuards[$config['driver']]($name, $config);
     }
