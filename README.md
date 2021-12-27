@@ -214,7 +214,7 @@ class DispatcherProvider implements ServiceProviderInterface
 ```php 
 namespace Models;
 
-use Phalcon\Di;
+use Phalcon\Di\Di;
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\Contracts\RememberingInterface;

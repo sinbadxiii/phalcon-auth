@@ -7,7 +7,6 @@ namespace Sinbadxiii\PhalconAuth\Guards;
 use Sinbadxiii\PhalconAuth\Contracts\Guard;
 use Sinbadxiii\PhalconAuth\Events\EventInterface;
 use Phalcon\Helper\Str;
-use Phalcon\Di;
 
 /**
  * Class TokenGuard
@@ -39,10 +38,11 @@ class TokenGuard implements Guard
 
     public function __construct($name, $provider, $inputKey = 'auth_token', $storageKey = 'auth_token')
     {
+        $di = class_exists("\\Phalcon\\Di") ? new \Phalcon\Di : new \Phalcon\Di\Di;
         $this->name     = $name;
         $this->provider = $provider;
-        $this->eventsManager  = Di::getDefault()->getShared("eventsManager");
-        $this->request        = Di::getDefault()->getShared("request");
+        $this->eventsManager  = $di::getDefault()->getShared("eventsManager");
+        $this->request        = $di::getDefault()->getShared("request");
         $this->inputKey   = $inputKey;
         $this->storageKey = $storageKey;
     }

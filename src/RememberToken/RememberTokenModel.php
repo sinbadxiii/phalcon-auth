@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\RememberToken;
 
-use Phalcon\Di;
 use Phalcon\Mvc\Model;
 use Sinbadxiii\PhalconAuth\Contracts\RememberTokenInterface;
 
@@ -52,7 +51,8 @@ class RememberTokenModel extends Model implements  RememberTokenInterface
 
     public function initialize()
     {
-        $configAuth = Di::getDefault()->getShared("config")->auth;
+        $di = class_exists("\\Phalcon\\Di") ? new \Phalcon\Di : new \Phalcon\Di\Di;
+        $configAuth = $di::getDefault()->getShared("config")->auth;
 
         $tableRememberToken = $configAuth->guards->{$configAuth->defaults->guard}->provider .
             "_remember_tokens";

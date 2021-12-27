@@ -12,7 +12,6 @@ use Sinbadxiii\PhalconAuth\Events\BeforeLogin;
 use Sinbadxiii\PhalconAuth\Events\EventInterface;
 use Sinbadxiii\PhalconAuth\Events\Logout;
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
-use Phalcon\Di;
 
 /**
  * Class SessionGuard
@@ -37,14 +36,17 @@ class SessionGuard implements GuardStateful, BasicAuth
     protected $viaRemember = false;
     protected $provider;
 
+    protected $di;
+
     public function __construct($name, $provider)
     {
         $this->name     = $name;
         $this->provider = $provider;
-
-        $this->session        = Di::getDefault()->getShared("session");
-        $this->cookies        = Di::getDefault()->getShared("cookies");
-        $this->eventsManager  = Di::getDefault()->getShared("eventsManager");
+        $di = class_exists("\\Phalcon\\Di") ? new \Phalcon\Di : new \Phalcon\Di\Di;
+        $this->di = $di;
+        $this->session        = $this->di::getDefault()->getShared("session");
+        $this->cookies        = $this->di::getDefault()->getShared("cookies");
+        $this->eventsManager  = $this->di::getDefault()->getShared("eventsManager");
         $this->request        = $this->getRequest();
     }
 
@@ -237,7 +239,7 @@ class SessionGuard implements GuardStateful, BasicAuth
 
     public function getRequest(): Request
     {
-        return $this->request ?: Di::getDefault()->getShared("request");
+        return $this->request ?: $this->di::getDefault()->getShared("request");
     }
 
     public function setRequest(Request $request)

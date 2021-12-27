@@ -6,7 +6,6 @@ namespace Sinbadxiii\PhalconAuth;
 
 use Closure;
 use InvalidArgumentException;
-use Phalcon\Di;
 
 /**
  * Class Auth
@@ -36,8 +35,9 @@ class Auth
 
     public function __construct($config = null, $security = null)
     {
-        $this->config = $config ?? Di::getDefault()->getShared("config")->auth;
-        $this->security = $security ?? Di::getDefault()->getShared("security");
+        $di = class_exists("\\Phalcon\\Di") ? new \Phalcon\Di : new \Phalcon\Di\Di;
+        $this->config = $config ?? $di::getDefault()->getShared("config")->auth;
+        $this->security = $security ?? $di::getDefault()->getShared("security");
     }
 
     /**

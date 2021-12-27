@@ -4,13 +4,14 @@ namespace Sinbadxiii\PhalconAuth\Providers;
 
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
-use Phalcon\Di;
 
 class ModelProvider implements ProviderInterface
 {
     protected $model;
 
     protected $hasher;
+
+    protected $di;
 
     /**
      * UsersModelProvider constructor.
@@ -21,11 +22,13 @@ class ModelProvider implements ProviderInterface
     {
         $this->hasher = $hasher;
         $this->model  = $config->model;
+        $this->di = class_exists("\\Phalcon\\Di") ? new \Phalcon\Di : new \Phalcon\Di\Di;
+
     }
 
     public function retrieveByCredentials(array $credentials)
     {
-        $builder = DI::getDefault()->get('modelsManager')
+        $builder = $this->di::getDefault()->get('modelsManager')
             ->createBuilder()
             ->from([$this->model]);
 
@@ -47,7 +50,7 @@ class ModelProvider implements ProviderInterface
         /**
          * @todo придумать как не жестко привязывать к id
          */
-//        return DI::getDefault()->get('modelsManager')
+//        return $this->di::getDefault()->get('modelsManager')
 //            ->createBuilder()
 //            ->from(['m' =>$this->model])
 //            ->where("m.id = :id:",
@@ -90,8 +93,8 @@ class ModelProvider implements ProviderInterface
 
         $rememberToken = new RememberTokenModel();
         $rememberToken->token = $token;
-        $rememberToken->user_agent = DI::getDefault()->get('request')->getUserAgent();
-        $rememberToken->ip = DI::getDefault()->get('request')->getClientAddress();
+        $rememberToken->user_agent = $this->di::getDefault()->get('request')->getUserAgent();
+        $rememberToken->ip = $this->di::getDefault()->get('request')->getClientAddress();
 
         $user->setRememberToken($rememberToken);
 
