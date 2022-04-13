@@ -124,9 +124,24 @@ class ProfileController extends Controller implements Accessicate
     }  
     ...
 }
-
-
 ```
+
+or just use the `$authAccess` property in the controller, adjusting with the help of `false` and `true` access to the controller
+
+```php 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use Phalcon\Mvc\Controller;
+
+class ProfileController extends Controller
+{
+    //access to the controller only when the user is logged in
+    public $autAccess = true;
+}
+```
+
 
 5. Create middleware extends from `Sinbadxiii\PhalconAuth\Middlewares\Authenticate`
 

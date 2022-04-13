@@ -5,10 +5,16 @@ namespace Sinbadxiii\PhalconAuth\Middlewares;
 use Phalcon\Di\Injectable;
 use Phalcon\Mvc\Dispatcher;
 
+/**
+ * Class Authenticate
+ * @package Sinbadxiii\PhalconAuth\Middlewares
+ */
 class Authenticate extends Injectable implements AuthenticatesRequest
 {
+    private const PROPERTY_AUTH_ACCESS = "authAccess";
+
     /**
-     * @var
+     * @var Dispatcher
      */
     protected Dispatcher $dispatcher;
 
@@ -54,6 +60,8 @@ class Authenticate extends Injectable implements AuthenticatesRequest
     {
         $controller = $this->dispatcher->getControllerClass();
 
-        return !(new $controller)->authAccess();
+        return !(new $controller)->authAccess() ||
+            (property_exists($controller, self::PROPERTY_AUTH_ACCESS) &&
+                (new $controller)->authAccess === false);
     }
 }
