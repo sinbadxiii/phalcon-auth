@@ -202,15 +202,19 @@ class SessionGuard implements GuardStateful, BasicAuth
     {
         $user = $this->user();
 
-        if ($this->user && ($tokenRemember = $this->user->getRememberToken())) {
-            $tokenRemember->delete();
+        $recaller = $this->recaller();
+
+        if ($recaller !== null) {
+            $tokenRemember = $user->getRememberToken($recaller->token());
+
+            if ($tokenRemember) {
+                $tokenRemember->delete();
+            }
+
+            $this->cookies->get($this->getRememberName())->delete();
         }
 
         $this->session->remove($this->getName());
-
-        if (! is_null($this->recaller())) {
-            $this->cookies->get($this->getRememberName())->delete();
-        }
 
         $this->event(new Logout($user));
 

@@ -11,7 +11,8 @@ use Phalcon\Mvc\Dispatcher;
  */
 class Authenticate extends Injectable implements AuthenticatesRequest
 {
-    private const PROPERTY_AUTH_ACCESS = "authAccess";
+    private const PROPERTY_AUTH_ACCESS   = "authAccess";
+    private const AUTH_ACCESS_BY_DEFAULT = true;
 
     /**
      * @var Dispatcher
@@ -60,8 +61,10 @@ class Authenticate extends Injectable implements AuthenticatesRequest
     {
         $controller = $this->dispatcher->getControllerClass();
 
-        return !(new $controller)->authAccess() ||
-            (property_exists($controller, self::PROPERTY_AUTH_ACCESS) &&
-                (new $controller)->authAccess === false);
+        $authAccess = property_exists($controller, self::PROPERTY_AUTH_ACCESS) ?
+            (new $controller)->authAccess : self::AUTH_ACCESS_BY_DEFAULT;
+
+        return (method_exists($controller, 'authAccess') &&
+                !(new $controller)->authAccess()) || $authAccess === false;
     }
 }
