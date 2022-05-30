@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sinbadxiii\PhalconAuth\Providers\Users\File;
+namespace Sinbadxiii\PhalconAuth\Providers\File;
 
 use Sinbadxiii\PhalconAuth\Exceptions\Collection\JsonNotValidException;
 use Sinbadxiii\PhalconAuth\Exceptions\Exception;

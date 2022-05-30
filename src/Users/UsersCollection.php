@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Users;
 
-use Phalcon\Collection;
+use Phalcon\Support\Collection;
 
 /**
  * Class UsersCollection
