@@ -5,8 +5,7 @@ namespace Sinbadxiii\PhalconAuth\Providers;
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\Providers\File\Parser;
 use Sinbadxiii\PhalconAuth\Users\User;
-use Sinbadxiii\PhalconAuth\Users\UsersC
-ollection;
+use Sinbadxiii\PhalconAuth\Users\UsersCollection;
 
 /**
  * Class UsersFileProvider
