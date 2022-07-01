@@ -4,8 +4,7 @@ namespace Sinbadxiii\PhalconAuth\Tests\Users;
 
 use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\Contracts\RememberingInterface;
-use Sinbadxiii\PhalconAuth\Contracts\RememberTokenterface;
-use Sinbadxiii\PhalconAuth\RememberToken\RememberTokenModel;
+use Sinbadxiii\PhalconAuth\Contracts\RememberTokenInterface;
 
 /**
  * Class UserStub
@@ -15,7 +14,7 @@ class UserModelStub implements AuthenticatableInterface, RememberingInterface
 {
     public int $id;
     public int $password;
-    public RememberTokenterface $remember_token;
+    public RememberTokenInterface $remember_token;
 
     public function getAuthIdentifier()
     {
@@ -27,12 +26,12 @@ class UserModelStub implements AuthenticatableInterface, RememberingInterface
         $this->password;
     }
 
-    public function getRememberToken()
+    public function getRememberToken(): ?RememberTokenInterface
     {
         return $this->remember_token;
     }
 
-    public function setRememberToken(RememberTokenterface $value)
+    public function setRememberToken(RememberTokenInterface $value)
     {
         $this->remember_token = $value;
 

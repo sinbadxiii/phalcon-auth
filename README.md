@@ -12,22 +12,20 @@ You can see an example of an application with authorization and limit here [sinb
 <a href="https://github.com/sinbadxiii/phalcon-auth/releases"><img src="https://img.shields.io/github/release/sinbadxiii/phalcon-auth?style=flat-square" alt="Latest Version"></img></a>
 </p>
 
-- ~~*Стандартная аутентификация на основе сессий и кук*~~
-- ~~*Аутентификация на основе токена*~~
-- ~~*Расширение кастомными guard'ами*~~
-- ~~*Гостевой доступ к контроллерам*~~
-- ~~*[Аутентификация с помощью JWT](https://github.com/sinbadxiii/phalcon-auth-jwt)*~~
-- ~~*HTTP Basic аутентификацция*~~
-- Активация по email (требуется стандартизировать работу с почтой)
-- Восстановление пароля(требуется стандартизировать работу с почтой)
-- Перевод документации на английский язык
+- ~~*Session and Cookie Based Authentication*~~
+- ~~*Token Based Authentication*~~
+- ~~*Extension with custom guards*~~
+- ~~*Guest access to controllers*~~
+- ~~*[Authentication with JWT](https://github.com/sinbadxiii/phalcon-auth-jwt)*~~
+- ~~*HTTP Basic authentication*~~
+- Activation by email (it is required to standardize work with mail)
+- Password recovery (it is required to standardize work with mail)
 
-Phalcon Auth позволит вам создать в своем веб-приложении систему аутентификации.
-  
-Общая суть системы аутентификации состоит в том, чтобы иметь под рукой "Охранников" (Guard), и "Поставщиков" (Provider), охранники определяют, как пользователи будут проходить аутентификацию, например с помощью стандартных Сессий, хранилища Сессий и файлов Cookie. 
+Phalcon Auth will allow you to create an authentication system in your web application.
 
-Провайдеры определяют, откуда будут извлекаются пользователи. По-умолчанию 
-это конечно же Phalcon\Model и строитель запросов к базе данных.
+The general essence of an authentication system is to have "Guards" (Guard) and "Providers" (Provider) at hand, the guards determine how users will be authenticated, for example using standard Sessions, Session storage and Cookies.
+
+Providers determine where users will be retrieved from. By default, this is, of course, Phalcon\Model and the database query builder.
 
 ![Banner](https://github.com/sinbadxiii/images/blob/master/phalcon-auth/auth-scheme.webp?raw=true)
 
@@ -48,19 +46,134 @@ Require the project using composer:
 
 ## How use
 
-1. Config:
+### 1. Config
 
-Файл конфигурации аутентификации вашего приложения должен будет либо находится в папке ваших конфигов, например config/auth.php. Либо подключаться в другом месте с доступом по ключу "auth" (`$this->config->auth`). Необходимо будет скопировать данные из папки в библиотеке config/auth.php 
+Your application's authentication configuration file will either need to be located in your config folder, such as config/auth.php or global config.php file with access by "auth" key (`$this->config->auth`).
 
-При стандартной конфигурации auth.php - defaults => guard => 'web', а driver = 'session', с помощью формы логина пользователь вводит свое имя пользователя и пароль. Если эти учетные данные верны, приложение сохранит информацию об аутентифицированном пользователе в пользовательском сеансе . Файл cookie, отправленный браузеру, содержит идентификатор сеанса, чтобы последующие запросы к приложению могли связать пользователя с правильным сеансом. После получения файла cookie сеанса приложение извлечет данные сеанса на основе идентификатора сеанса, обратите внимание, что информация аутентификации будет сохранена в сеансе, и будет считать пользователя «аутентифицированным».
+```php
+<?php
 
-Второй вариант, если в конфигурации auth.php будет указано в defaults => guard => 'api', а driver = 'token', данная настройка позволит пройти проверку подлинности для доступа к вашему API приложению, файлы cookie обычно не используются для проверки подлинности из-за отсутствия веб-браузера. Вместо этого удаленная служба отправляет API-токен при каждом запросе. Приложение может проверить входящий токен по таблице допустимых токенов API и «аутентифицировать» запрос как выполняемый пользователем, связанным с этим токеном API.
+...
+    'auth' => [
+        'defaults' => [
+            'guard' => 'web',
+            'passwords' => 'users',
+        ],
+        'guards' => [
+            'web' => [
+                'driver' => 'session', //session || token
+                'provider' => 'users',
+            ],
+        ],
+        'providers' => [
+            'users' => [
+                'driver' => 'model',
+                'model'  => \Models\Users::class,
+            ]
+        ]
+    ],
+...
+```
 
-2. Database:
-   
-Проведите запросы для создания таблиц в БД из файлов `db/users.sql`, `db/users_remember_tokens.sql` (может когда-нибудь дойдут руки до нормальной миграции :) )
+#### 1.1. Config Session
 
-3. Register a service provider `Sinbadxiii\PhalconAuth\AuthProvider`
+With the default auth configuration - `defaults => guard => 'web'` and `driver => 'session'`, the user enters their username and password using the login form.
+
+If these credentials are correct, the application will store information about the authenticated user in the user's session.
+
+The cookie sent to the browser contains the session ID so that subsequent requests to the application can associate the user with the correct session. After receiving the session cookie, the application will retrieve the session data based on the session id, note that the authentication information will be stored in the session, and will consider the user to be "authenticated".
+
+```php
+<?php
+
+...
+    'auth' => [
+        'defaults' => [
+            'guard' => 'web',
+            'passwords' => 'users',
+        ],
+        'guards' => [
+            'web' => [
+                'driver' => 'session',
+                'provider' => 'users',
+            ],
+        ],
+        'providers' => [
+            'users' => [
+                'driver' => 'model',
+                'model'  => \Models\Users::class,
+            ]
+        ]
+    ],
+...
+```
+
+#### 1.2. Config Token
+
+If the auth configuration is set to `defaults => guard => 'api'` and `driver => 'token'`, this setting will allow authentication to access your API application, cookies are usually not used for authentication due to lack of web -browser. Instead, the remote service sends an API token on every request. The application can validate the incoming token against a table of valid API tokens and "authenticate" the request as being made by the user associated with that API token.
+
+```php
+<?php
+
+...
+    'auth' => [
+        'defaults' => [
+            'guard' => 'api',
+            'passwords' => 'users',
+        ],
+        'guards' => [
+            'api' => [
+                'driver' => 'token',
+                'provider' => 'users',
+            ],
+        ],
+        'providers' => [
+            'users' => [
+                'driver' => 'model',
+                'model'  => \Models\Users::class,
+            ]
+        ]
+    ],
+...
+```
+
+By default, the name of the parameter in the request and the field in the database is equal to `auth_token`,
+
+for example GET request:
+
+```
+//GET
+https://yourapidomain/api/v2/users?auth_token=fGa$gdGPSfEgT41r3F4fg#^33
+```
+
+or POST:
+
+```
+//POST
+//params POST request 
+[
+    "auth_token": "fGa$gdGPSfEgT41r3F4fg#^33"
+]
+
+https://yourapidomain/api/v2/users
+```
+
+or `Authorization` header:
+
+```
+
+Authorization: Bearer fGa$gdGPSfEgT41r3F4fg#^33
+
+https://yourapidomain/api/v2/users
+```
+
+### 2. Database
+
+Import files to create tables in the database `db/users.sql`, `db/users_remember_tokens.sql` and `db/create_auth_token_users.sql` if the auth_token field is needed
+
+### 3. Register a service provider
+
+By default `Sinbadxiii\PhalconAuth\Auth()` will use auth config from `$this->config->auth`.
 
 ```php 
 $di->setShared('auth', function () {
@@ -68,44 +181,20 @@ $di->setShared('auth', function () {
 });
 ```
 
-or
+Or explicitly pass your auth config:
 
-```php
-declare(strict_types=1);
-
-namespace Sinbadxiii\PhalconAuth;
-
-use Phalcon\Di\DiInterface;
-use Phalcon\Di\ServiceProviderInterface;
-
-class AuthProvider implements ServiceProviderInterface
-{
-    /**
-     * @var string
-     */
-    protected $providerName = 'auth';
-
-    /**
-     * @param DiInterface $di
-     */
-    public function register(DiInterface $di): void
-    {
-        $di->setShared($this->providerName, function () {
-            return new Auth();
-        });
-    }
-}
-...
-
-$di = new FactoryDefault();
-...
-$authServiceProvider = new AuthProvider();
-$authServiceProvider->register($di); 
-
-
+```php 
+$di->setShared('auth', function () {
+    $authConfig = $this->getConfig()->get("auth");
+    
+    return new \Sinbadxiii\PhalconAuth\Auth($authConfig);
+});
 ```
 
-4. Implement your controllers from `Sinbadxiii\PhalconAuth\Middlewares\Accessicate`
+### 4. Controller access, authentication or guest 
+
+Implement your controllers from `Sinbadxiii\PhalconAuth\Middlewares\Accessicate`. 
+You can use the `authAccess()` method on a controller to indicate if the controller needs authenticated access.
 
 ```php 
 declare(strict_types=1);
@@ -143,8 +232,9 @@ class ProfileController extends Controller
 ```
 
 
-5. Create middleware extends from `Sinbadxiii\PhalconAuth\Middlewares\Authenticate`
+### 5. Middleware 
 
+Create middleware extends from `Sinbadxiii\PhalconAuth\Middlewares\Authenticate`
 example:
 
 ```php
@@ -166,15 +256,20 @@ class Authenticate extends AuthMiddleware
     protected function redirectTo()
     {
         if (isset($this->response)) {
-            $this->response->redirect("/admin/login")->send();
+            $this->response->redirect("/login")->send();
         }
     }
 }
 ```
 
-and attach it in your dispatcher:
+and attach it in your service dispatcher:
 
 ```php
+
+use App\Security\Authenticate;
+
+... 
+ 
 $di->setShared("dispatcher", function () use ($di) {
     $dispatcher = new Dispatcher();
 
@@ -186,45 +281,28 @@ $di->setShared("dispatcher", function () use ($di) {
 });
 ```
 
-or
+When the middleware detects an unauthenticated user, it executes the `redirectTo()` method, by default the redirect goes to the url you need (the same login form, for example), you can change this behavior, for example, return a json response if an ajax request is used for authentication:
 
 ```php
-declare(strict_types=1);
 
-namespace App\Providers;
-
-use App\Security\Authenticate;
-use Phalcon\Mvc\Dispatcher;
-
-use Phalcon\Di\DiInterface;
-use Phalcon\Di\ServiceProviderInterface;
-
-class DispatcherProvider implements ServiceProviderInterface
+protected function redirectTo()
 {
-    /**
-     * @var string
-     */
-    protected $providerName = 'dispatcher';
+    $this->response->setJsonContent(
+        [
+            'success' => false,
+            'message' => 'Authentication failure'
+        ], JSON_UNESCAPED_UNICODE
+    );
 
-    /**
-     * @param DiInterface $di
-     */
-    public function register(DiInterface $di): void
-    {
-        $di->setShared($this->providerName, function () use ($di) {
-            $dispatcher = new Dispatcher();
-
-            $eventsManager = $di->getShared('eventsManager');
-            $eventsManager->attach('dispatch', new Authenticate());
-            $dispatcher->setEventsManager($eventsManager);
-
-            return $dispatcher;
-        });
-    }
+    if (!$this->response->isSent()) {
+        $this->response->send();
+    } 
 }
 ```
 
-6. Implement your model Users fom AuthenticatableInterface and RememberingInterface, example:
+### 6. Users 
+
+Implement your model Users fom `Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface` and `Sinbadxiii\PhalconAuth\Contracts\RememberingInterface` (if you want to use the remember me feature), example:
 
 ```php 
 namespace Models;
@@ -236,9 +314,7 @@ use Sinbadxiii\PhalconAuth\Contracts\RememberingInterface;
 use Sinbadxiii\PhalconAuth\Contracts\RememberTokenInterface;
 
 class Users extends BaseModel implements AuthenticatableInterface, RememberingInterface
-{
-   ...
-   
+{  
     public function initialize()
     {
         $this->setSource('users');
@@ -289,60 +365,50 @@ class Users extends BaseModel implements AuthenticatableInterface, RememberingIn
         $this->remember_token = $value;
     }
 }
-
-```
-
-### Перенаправление неаутентифицированных пользователей
-
-Когда middleware обнаруживает неаутентифицированного пользователя, то выполняет метод `redirectTo()`, по умолчанию редирект идет на нужный вам url (ту же форму логина, например), вы можете изменить это поведение, например вернуть json ответ, если для аутентификации используеся ajax запрос.
-
-```php
-
-protected function redirectTo()
-{
-    $this->response->setJsonContent(
-                    [
-                        'success' => false,
-                        'message' => 'Authentication failure'
-                    ], JSON_UNESCAPED_UNICODE
-                );
-
-    if (!$this->response->isSent()) {
-        $this->response->send();
-    } 
-}
 ```
 
 ## Methods
 
-### Проверка аутентификации текущего пользователя
+### Checking the authentication of the current user
 
-Чтобы определить, аутентифицирован ли пользователь, выполняющий входящий HTTP-запрос, вы можете использовать метод `check()`. Этот метод вернет true если пользователь аутентифицирован:
-
+To determine if the user making the incoming HTTP request is authenticated, you can use the `check()` method. This method will return `true` if the user is authenticated:
 
 ```php
 $this->auth->check(); 
 //check authentication
 ```
 
-### Получение аутентифицированного пользователя
+for example, you can check on the login form page that if the user is logged in, then do not show him the input form:
 
-При обработке входящего запроса вы можете получить доступ к аутентифицированному пользователю через метод `user()`. Результатом будет провайдер, указанный в конфиге auth.php, по-стандарту Phalcon\Model Users таблицы users. 
 
-Так же можно запросить идентификатор пользователя (ID), с помощью метода `id()`
+```php
+public function loginFormAction()
+{
+    if ($this->auth->check()) { 
+        //redirect to profile page 
+        return $this->response->redirect(
+            "/profile", true
+        );
+    }
+}
+```
+
+### Getting the authenticated user
+
+When processing an incoming request, you can access the authenticated user through the `user()` method. The result will be the provider specified in the auth.php config, according to the Phalcon\Model Users standard of the users table.
+
+You can also request a user identifier (ID) using the `id()` method:
 
 
 ```php 
-$this->auth->user();
-//get the user
+$this->auth->user(); //get the user
 
-$this->auth->id();
-//get user id
+$this->auth->id(); //get user id
 ```
 
-### Попытка аутентификации 
+### Authentication attempt
 
-Метод `attempt()` используется для обработки попыток аутентификации из формы «входа в систему» вашего приложения.
+The `attempt()` method is used to handle authentication attempts from your application's login form:
 
 ```php 
 $username = $this->request->getPost("username");
@@ -358,36 +424,41 @@ if ($this->auth->attempt(['username' => $username, 'password' => $password])) {
 //fail attempt
 ```
 
-Метод `attempt()` принимает массив пар ключ/значение в качестве первого аргумента. Значения в массиве будут использоваться для поиска пользователя в таблице базы данных. Итак, в приведенном выше примере пользователь будет извлечен по значению столбца username. Если пользователь найден, хешированный пароль, хранящийся в базе данных, будет сравниваться со значением password, переданным в метод. Вы не должны хешировать значение входящего запроса password, т.к. пароль уже автоматически хешируется, для сравнения его с хешированным паролем в базе данных. Сессия с аутентификацией будет запущена для пользователя, если хешированные пароли совпадают.
+The `attempt()` method takes an array of key/value pairs as its first argument. The values in the array will be used to look up the user in the users database table. So, in the example above, the user will be retrieved by the value of the username column. If the user is found, the hashed password stored in the database will be compared against the password value passed to the method. You should not hash the value of the incoming password request, as the password is already automatically hashed to compare it with the hashed password in the database. An authenticated session will be started for the user if the hashed passwords match.
 
-Помните, что запрашиваться будут пользователи из вашей базы данных на основе конфигурации "провайдера". В файле конфигурации config/auth.php по умолчанию указан поставщик пользователей Phalcon\Model, и ему дано указание использовать модель \Models\User для получения пользователей. Вы можете изменить эти значения в файле конфигурации в зависимости от потребностей вашего приложения.
+Remember that users from your database will be queried based on the "provider" configuration. The default auth configuration specifies the user provider = "model" (Phalcon\Model) and is instructed to use the \Models\User model to get users. You can change these values in the configuration file depending on the needs of your application.
 
-Метод `attempt()` возвратит true если аутентификация прошла успешно. В противном случае будет возвращен false.
+The `attempt()` method will return `true` if the authentication was successful. Otherwise, `false` will be returned.
 
-### Указание дополнительных условий
+### Specifying additional credentials
 
-Вы также можете добавить дополнительные условия запроса в дополнение к email/username и паролю пользователя. Для этого нужно просто добавить условия запроса в массив, переданный методу `attempt()`. Например, мы можем проверить, что пользователь отмечен как «активный»:
-
+You can also add additional request credentials in addition to the user's email/username and password. To do this, simply add the request conditions to the array passed to the `attempt()` method. For example, we can check if a user is marked as "is_published":
 ```php 
-if ($this->auth->attempt(['username' => $username, 'password' => $password, 'published' => 1], $remember)) {
+$username = $this->request->getPost("username");
+$password = $this->request->getPost("password");
+
+//attempt login with additional credentials
+if ($this->auth->attempt(['username' => $username, 'password' => $password, 'is_published' => 1])) {
 
  //success attempt
  ...
 }
+
+//fail attempt
 ```
 
-### "Запомнить меня"
+### "Remember me"
 
-Если вы хотите обеспечить функциональность «запомнить меня» в своем приложении, вы можете передать логическое значение в качестве второго аргумента метода attempt.
+If you want to provide "remember me" functionality in your application, you can pass a boolean value as the second argument to the attempt method.
 
-Когда это значение равно true, то время аутентификация пользователя будет неопределенно долго или до тех пор, пока он не выйдет из системы вручную по logout. Таблица users_remember_tokens содержит строковый столбец token, который будет использоваться для хранения токена «запомнить меня».
+When this value is true, the user will be authenticated indefinitely or until the user logs out manually by logout. The `users_remember_tokens` table contains a token string column that will be used to store the "remember me" token:
 
 ```php 
 $username = $this->request->getPost("username");
 $password = $this->request->getPost("password");
 $remember = this->request->getPost('remember') ? true : false;
 
-//attempt login with credentials
+//attempt login with credentials and remember
 if ($this->auth->attempt(['username' => $username, 'password' => $password], $remember)) {
 
  //success attempt
@@ -397,7 +468,7 @@ if ($this->auth->attempt(['username' => $username, 'password' => $password], $re
 //fail attempt
 ```
 
-Используйте метод `viaRemember()`, чтобы проверить, прошел ли пользователь аутентификацию с помощью файла cookie «запомнить меня»
+Use the `viaRemember()` method to check if the user is authenticated with the "remember me" cookie:
 
 ```php
 //use method viaRemember to check the user was authenticated using the remember me cookie
