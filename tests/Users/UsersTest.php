@@ -2,8 +2,8 @@
 
 namespace Sinbadxiii\PhalconAuth\Tests\Users;
 
-use Sinbadxiii\PhalconAuth\Contracts\AuthenticatableInterface;
-use Sinbadxiii\PhalconAuth\Contracts\RememberingInterface;
+use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
+use Sinbadxiii\PhalconAuth\RememberingInterface;
 use Sinbadxiii\PhalconAuth\Tests\AbstractTestCase;
 
 /**

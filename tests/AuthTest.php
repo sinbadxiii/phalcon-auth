@@ -4,7 +4,7 @@ namespace Sinbadxiii\PhalconAuth\Tests;
 
 use Phalcon\Config\Config;
 use Phalcon\Encryption\Security;
-use Sinbadxiii\PhalconAuth\Auth;
+use Sinbadxiii\PhalconAuth\Manager;
 
 /**
  * Class AuthTest
@@ -17,7 +17,7 @@ class AuthTest extends AbstractTestCase
     {
         $configAuth = new Config(require (__DIR__ . "/../config/auth.php"));
 
-        $auth = new Auth(
+        $auth = new Manager(
             $configAuth->auth, new Security()
         );
 
