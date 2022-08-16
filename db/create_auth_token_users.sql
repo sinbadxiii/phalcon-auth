@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `auth_token` VARCHAR(255) NULL AFTER `email`;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Tests\Users;
 
-use Sinbadxiii\PhalconAuth\Contracts\RememberTokenInterface;
+use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 
-class RememberTokenModelStub implements RememberTokenInterface
+class RememberTokenModelStub implements  RememberTokenInterface
 {
     public $id;
     public $user_id;
