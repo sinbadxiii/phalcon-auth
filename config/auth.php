@@ -24,10 +24,10 @@ return [
 /**          file format .json
             {
                 "0":{"name":"admin","password": "admin","email": "admin@admin.ru"},
-                "1":{"name":"admin1","password": "admin1","email": "admin1@admin1.ru"},
+                "1":{"name":"user","password": "user","email": "user@user.ru"},
                  ...
                 or if password_crypted = true
-               "2":{"name":"admin1","password": "$2y$10$ME02QlQxWGdDNUdiUTJucuhQHYQlIglb3lG2rfdzvK3UbQXAPrc.q","email": "admin1@admin1.ru"},
+               "2":{"name":"user","password": "$2y$10$ME02QlQxWGdDNUdiUTJucuhQHYQlIglb3lG2rfdzvK3UbQXAPrc.q","email": "user@user.ru"},
             }
  * */
         ],
