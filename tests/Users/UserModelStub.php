@@ -13,31 +13,33 @@ use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 class UserModelStub implements AuthenticatableInterface, RememberingInterface
 {
     public int $id;
-    public int $password;
-    public RememberingInterface $remember_token;
+    public string $password;
+    public RememberTokenInterface $remember_token;
 
-    public function getAuthIdentifier()
+    public function getAuthIdentifier(): int
     {
-        $this->id;
+        return $this->id;
     }
 
-    public function getAuthPassword()
+    public function getAuthPassword(): string
     {
-        $this->password;
+        return $this->password;
     }
 
-    public function setRememberToken(RememberTokenInterface $value)
+    public function setRememberToken(RememberTokenInterface $value): static
     {
         $this->remember_token = $value;
 
         return $this;
     }
 
-    public function createRememberToken(): ?RememberTokenInterface
+    public function createRememberToken(): RememberTokenInterface
     {
+        return new RememberTokenModelStub();
     }
 
-    public function getRememberToken(): ?RememberTokenInterface
+    public function getRememberToken(string $token = null): ?RememberTokenInterface
     {
+        return $this->remember_token;
     }
 }

@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use Sinbadxiii\PhalconAuth\Access\AccessInterface;
 use Phalcon\Di\Di;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
+use Phalcon\Config\ConfigInterface;
 
 use function is_null;
 use function call_user_func;
@@ -22,7 +23,7 @@ class Manager implements ManagerInterface
     /**
      * @var mixed
      */
-    protected $config;
+    protected ConfigInterface $config;
 
     /**
      * @var mixed
@@ -54,7 +55,7 @@ class Manager implements ManagerInterface
      */
     protected array $accessList = [];
 
-    public function __construct($config = null, $security = null)
+    public function __construct(ConfigInterface $config = null, $security = null)
     {
         $this->config = $config ?? Di::getDefault()->getShared("config")->auth;
 
@@ -107,7 +108,9 @@ class Manager implements ManagerInterface
             __NAMESPACE__,
             ucfirst($configGuard->driver));
 
-        $providerAdapter = $this->getAdapterProvider($configGuard ?? null);
+        $providerAdapter = $this->getAdapterProvider(
+            $configGuard->provider ?? null
+        );
         $guard = new $className($name, $providerAdapter);
 
         if (class_exists($className)) {
@@ -120,12 +123,17 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * @param $configGuard
-     * @return mixed
+     * @param $provider
+     * @return mixed|\Sinbadxiii\PhalconAuth\Adapter\AdapterInterface|void
      */
-    public function getAdapterProvider($configGuard = null): mixed
+    public function getAdapterProvider($provider = null)
     {
-        $configProvider = $this->config->providers->{$configGuard->provider};
+        $configProvider = $this->config->providers->{$provider};
+
+        if ($configProvider === null) {
+            return;
+        }
+
         $adapterName = $configProvider->adapter;
 
         if (isset($this->customProviders[$adapterName])) {
