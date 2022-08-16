@@ -27,7 +27,9 @@ class Authenticate extends Injectable implements AuthenticatesRequest
 
     public function __construct()
     {
-        $this->auth->addAccessList($this->accessList);
+        if (!empty($this->accessList)) {
+            $this->auth->addAccessList($this->accessList);
+        }
     }
 
     /**

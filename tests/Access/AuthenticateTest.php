@@ -1,6 +1,6 @@
 <?php
 
-namespace Sinbadxiii\PhalconAuth\Tests\Middleware;
+namespace Sinbadxiii\PhalconAuth\Tests\Access;
 
 use Phalcon\Di\Injectable;
 use Sinbadxiii\PhalconAuth\Access\Authenticate;
@@ -9,7 +9,7 @@ use Sinbadxiii\PhalconAuth\Tests\AbstractTestCase;
 
 /**
  * Class AuthenticateTest
- * @package Sinbadxiii\PhalconAuth\Tests\Middleware
+ * @package Sinbadxiii\PhalconAuth\Tests\Access
  */
 class AuthenticateTest extends AbstractTestCase
 {
