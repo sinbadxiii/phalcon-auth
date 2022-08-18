@@ -1,6 +1,6 @@
 <?php
 
-namespace Sinbadxiii\PhalconAuth\Tests\Users;
+namespace Sinbadxiii\PhalconAuth\Tests\User;
 
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberingInterface;
@@ -8,7 +8,7 @@ use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 
 /**
  * Class UserStub
- * @package Sinbadxiii\PhalconAuth\Tests\Users
+ * @package Sinbadxiii\PhalconAuth\Tests\User
  */
 class UserModelStub implements AuthenticatableInterface, RememberingInterface
 {

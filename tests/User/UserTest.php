@@ -1,6 +1,6 @@
 <?php
 
-namespace Sinbadxiii\PhalconAuth\Tests\Users;
+namespace Sinbadxiii\PhalconAuth\Tests\User;
 
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberingInterface;
@@ -8,9 +8,9 @@ use Sinbadxiii\PhalconAuth\Tests\AbstractTestCase;
 
 /**
  * Class UsersTest
- * @package Sinbadxiii\PhalconAuth\Tests\Users
+ * @package Sinbadxiii\PhalconAuth\Tests\User
  */
-class UsersTest extends AbstractTestCase
+class UserTest extends AbstractTestCase
 {
     /**
      * @test

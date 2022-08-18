@@ -4,6 +4,6 @@ namespace Sinbadxiii\PhalconAuth;
 
 interface AuthenticatableInterface
 {
-    public function getAuthIdentifier();
-    public function getAuthPassword();
+    public function getAuthIdentifier(): mixed;
+    public function getAuthPassword(): string;
 }

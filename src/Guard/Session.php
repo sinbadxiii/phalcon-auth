@@ -16,7 +16,7 @@ use function is_null;
  * Class Session
  * @package Sinbadxiii\PhalconAuth\Guard
  */
-class Session implements GuardStatefulInterface, BasicAuthInterface
+class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterface
 {
     use GuardHelper;
     use BasicHelper;
