@@ -12,9 +12,8 @@ use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
  */
 class User implements AuthenticatableInterface
 {
-    private $id;
-    private $key;
-    private $password;
+    private int $id;
+    private string $password;
 
     /**
      * User constructor.
@@ -28,35 +27,19 @@ class User implements AuthenticatableInterface
     }
 
     /**
-     * @param $key
+     * @return mixed
      */
-    public function setKey($key)
+    public function getAuthIdentifier(): mixed
     {
-        $this->key = $key;
+        return $this->id;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getAuthIdentifier()
-    {
-        return $this->{$this->getKey()};
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAuthPassword()
+    public function getAuthPassword(): string
     {
         return $this->password;
-    }
-
-    /**
-     * @return mixed
-     */
-    private function getKey()
-    {
-        return "id";
     }
 
     /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sinbadxiii\PhalconAuth\Tests\Users;
+namespace Sinbadxiii\PhalconAuth\Tests\User;
 
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 

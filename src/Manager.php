@@ -10,6 +10,7 @@ use Sinbadxiii\PhalconAuth\Access\AccessInterface;
 use Phalcon\Di\Di;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
 use Phalcon\Config\ConfigInterface;
+use Sinbadxiii\PhalconAuth\Guard\GuardInterface;
 
 use function is_null;
 use function call_user_func;
@@ -70,18 +71,18 @@ class Manager implements ManagerInterface
 
     /**
      * @param string $name
-     * @return mixed
+     * @return \Phalcon\Config\ConfigInterface|null
      */
-    protected function getConfigGuard(string $name): mixed
+    protected function getConfigGuard(string $name): ?ConfigInterface
     {
         return $this->config->guards->{$name};
     }
 
     /**
-     * @param null $name
-     * @return mixed
+     * @param $name
+     * @return \Sinbadxiii\PhalconAuth\GuardInterface
      */
-    public function guard($name = null): mixed
+    public function guard($name = null): GuardInterface
     {
         $name = $name ?: $this->getDefaultDriver();
 
@@ -92,7 +93,7 @@ class Manager implements ManagerInterface
      * @param $name
      * @return mixed
      */
-    protected function resolve($name): mixed
+    protected function resolve($name)
     {
         $configGuard = $this->getConfigGuard($name);
 
@@ -123,10 +124,10 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * @param $provider
+     * @param string|null $provider
      * @return mixed|\Sinbadxiii\PhalconAuth\Adapter\AdapterInterface|void
      */
-    public function getAdapterProvider($provider = null)
+    public function getAdapterProvider(string $provider = null)
     {
         $configProvider = $this->config->providers->{$provider};
 
@@ -177,7 +178,7 @@ class Manager implements ManagerInterface
      * @param Closure $callback
      * @return $this
      */
-    public function extendGuard($driver, Closure $callback): static
+    public function extendGuard($driver, Closure $callback): ManagerInterface
     {
         $this->customGuards[$driver] = $callback;
 
@@ -185,11 +186,11 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * @param $name
-     * @param $config
+     * @param string $name
+     * @param \Phalcon\Config\ConfigInterface $config
      * @return mixed
      */
-    protected function callCustomGuard($name, $config): mixed
+    protected function callCustomGuard(string $name, ConfigInterface $config): mixed
     {
         return $this->customGuards[$config->driver]($name, $config);
     }
