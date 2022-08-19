@@ -8,7 +8,10 @@ namespace Sinbadxiii\PhalconAuth\Adapter;
  */
 class Memory extends CollectionAdapterAbstract implements AdapterInterface
 {
-    protected function getData()
+    /**
+     * @return array
+     */
+    protected function getData(): array
     {
         return $this->config->data->toArray();
     }

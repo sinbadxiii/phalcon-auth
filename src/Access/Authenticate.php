@@ -24,6 +24,11 @@ class Authenticate extends Injectable implements AuthenticatesRequest
      */
     protected Dispatcher $dispatcher;
 
+    /**
+     * @var string
+     */
+    protected string $actionName;
+
 
     public function __construct()
     {
@@ -40,6 +45,7 @@ class Authenticate extends Injectable implements AuthenticatesRequest
     public function beforeExecuteRoute(Event $event, Dispatcher $dispatcher): void
     {
         $this->dispatcher = $dispatcher;
+        $this->actionName = $this->dispatcher->getActionName();
 
         $this->authenticate();
     }
@@ -51,7 +57,7 @@ class Authenticate extends Injectable implements AuthenticatesRequest
     {
         if ($access = $this->auth->getAccess()) {
 
-            if ($access->isAllowed()) {
+            if ($access->isAllowed($this->actionName)) {
                 return true;
             }
 

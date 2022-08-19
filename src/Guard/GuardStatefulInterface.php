@@ -6,10 +6,10 @@ use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 
 interface GuardStatefulInterface
 {
-    public function attempt(array $credentials = [], $remember = false): bool;
-    public function login(AuthenticatableInterface $user, $remember = false): void;
-    public function loginById($id, $remember = false);
+    public function attempt(array $credentials = [], bool $remember = false): bool;
+    public function login(AuthenticatableInterface $user, bool $remember = false): void;
+    public function loginById($id, bool $remember = false);
     public function once(array $credentials = []);
-    public function viaRemember();
+    public function viaRemember(): bool;
     public function logout();
 }

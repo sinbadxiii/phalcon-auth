@@ -16,10 +16,9 @@ trait BasicHelper
     /**
      * @param $field
      * @param $extraConditions
-     * @return mixed
-     * @throws \Sinbadxiii\PhalconAuth\Exception\UnauthorizedHttpException
+     * @return bool
      */
-    public function basic($field = 'email', $extraConditions = []): mixed
+    public function basic(string $field = 'email', array $extraConditions = []): bool
     {
         if ($this->check()) {
             return true;
@@ -33,12 +32,12 @@ trait BasicHelper
     }
 
     /**
-     * @param Request $request
-     * @param $field
+     * @param \Phalcon\Http\Request $request
+     * @param string $field
      * @param array $extraConditions
      * @return bool
      */
-    protected function attemptBasic(Request $request, $field, $extraConditions = [])
+    protected function attemptBasic(Request $request, string $field, array $extraConditions = []): bool
     {
         if (! $request->getBasicAuth()) {
             return false;
@@ -51,12 +50,15 @@ trait BasicHelper
 
     /**
      * @param \Phalcon\Http\Request $request
-     * @param $field
+     * @param string $field
      * @return array
      */
-    protected function basicCredentials(Request $request, $field): array
+    protected function basicCredentials(Request $request, string $field): array
     {
-        return [$field => $this->userFromBasic($request), 'password' => $this->passwordFromBasic($request)];
+        return [
+            $field => $this->userFromBasic($request),
+            'password' => $this->passwordFromBasic($request)
+        ];
     }
 
     /**
@@ -64,7 +66,7 @@ trait BasicHelper
      * @param $extraConditions
      * @return mixed
      */
-    public function onceBasic($field = 'email', $extraConditions = []): mixed
+    public function onceBasic(string $field = 'email', array $extraConditions = []): mixed
     {
         $credentials = $this->basicCredentials($this->getRequest(), $field);
 
@@ -77,7 +79,7 @@ trait BasicHelper
 
     /**
      * @param $request
-     * @return mixed|string
+     * @return mixed
      */
     private function userFromBasic(Request $request)
     {

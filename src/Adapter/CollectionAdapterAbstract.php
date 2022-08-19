@@ -4,7 +4,6 @@ namespace Sinbadxiii\PhalconAuth\Adapter;
 
 use Phalcon\Encryption\Security;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
-use function var_dump;
 
 /**
  * Class CollectionAdapterAbstract
@@ -12,9 +11,8 @@ use function var_dump;
  */
 abstract class CollectionAdapterAbstract implements AdapterInterface
 {
-    protected UserCollection $collection;
-    protected $config;
     protected Security $hasher;
+    protected $config;
 
     /**
      * @param $hasher
@@ -37,9 +35,9 @@ abstract class CollectionAdapterAbstract implements AdapterInterface
      */
     public function retrieveByCredentials(array $credentials): ?User
     {
-        $this->collection = new UserCollection($this->getData());
+        $collection = new UserCollection($this->getData());
 
-        return $this->collection::first($credentials);
+        return $collection->first($credentials);
     }
 
     /**
@@ -48,9 +46,9 @@ abstract class CollectionAdapterAbstract implements AdapterInterface
      */
     public function retrieveById($identifier): ?User
     {
-        $this->collection = new UserCollection($this->getData());
+        $collection = new UserCollection($this->getData());
 
-        return ($userData = $this->collection[$identifier]) ? new User($userData) : null;
+        return ($userData = $collection[$identifier]) ? new User($userData) : null;
     }
 
     /**

@@ -8,6 +8,10 @@ use Phalcon\Di\Injectable;
 
 use function in_array;
 
+/**
+ * Class AccessAbstract
+ * @package Sinbadxiii\PhalconAuth\Access
+ */
 abstract class AccessAbstract extends Injectable implements AccessInterface
 {
     /**
@@ -60,34 +64,29 @@ abstract class AccessAbstract extends Injectable implements AccessInterface
     }
 
     public function redirectTo()
-    {
-    }
+    {}
 
     /**
+     * @param string $actionName
      * @return bool
      */
-    public function isAllowed(): bool
+    public function isAllowed(string $actionName): bool
     {
-        $exceptActions = $this->getExceptActions();
-        $onlyActions   = $this->getOnlyActions();
-
-        $action = $this->dispatcher->getActionName();
-
         $isAllowed     = $this->allowedIf();
 
-        if (!empty($exceptActions)) {
-            if ($isAllowed || in_array($action, $exceptActions)) {
+        if (!empty($this->exceptActions)) {
+            if ($isAllowed || in_array($actionName, $this->exceptActions)) {
                 return true;
             }
         }
 
-        if (!empty($onlyActions)) {
-            if ($isAllowed && in_array($action, $onlyActions)) {
+        if (!empty($this->onlyActions)) {
+            if ($isAllowed && in_array($actionName, $this->onlyActions)) {
                 return true;
             }
         }
 
-        if (empty($onlyActions) && empty($exceptActions)) {
+        if (empty($this->onlyActions) && empty($this->exceptActions)) {
             if ($isAllowed) {
                 return true;
             }

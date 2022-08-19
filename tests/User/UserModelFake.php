@@ -7,10 +7,10 @@ use Sinbadxiii\PhalconAuth\RememberingInterface;
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 
 /**
- * Class UserStub
+ * Class UserModelFake
  * @package Sinbadxiii\PhalconAuth\Tests\User
  */
-class UserModelStub implements AuthenticatableInterface, RememberingInterface
+class UserModelFake implements AuthenticatableInterface, RememberingInterface
 {
     public int $id;
     public string $password;
@@ -35,7 +35,7 @@ class UserModelStub implements AuthenticatableInterface, RememberingInterface
 
     public function createRememberToken(): RememberTokenInterface
     {
-        return new RememberTokenModelStub();
+        return new RememberTokenModelFake();
     }
 
     public function getRememberToken(string $token = null): ?RememberTokenInterface
