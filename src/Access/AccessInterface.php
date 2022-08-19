@@ -11,7 +11,7 @@ interface AccessInterface
     public function getExceptActions(): array;
     public function only(...$actions): void;
     public function getOnlyActions(): array;
-    public function isAllowed(): bool;
+    public function isAllowed(string $actionName): bool;
     public function redirectTo();
     public function allowedIf(): bool;
 }

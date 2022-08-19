@@ -6,7 +6,7 @@ namespace Sinbadxiii\PhalconAuth\Tests\User;
 
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 
-class RememberTokenModelStub implements  RememberTokenInterface
+class RememberTokenModelFake implements  RememberTokenInterface
 {
     public $id;
     public $user_id;

@@ -17,10 +17,10 @@ class UserTest extends AbstractTestCase
      */
     public function itImplementModel(): void
     {
-        $userStub = new UserModelStub();
+        $userFake = new UserModelFake();
 
-        $this->assertInstanceOf(AuthenticatableInterface::class, $userStub);
-        $this->assertInstanceOf(RememberingInterface::class, $userStub);
+        $this->assertInstanceOf(AuthenticatableInterface::class, $userFake);
+        $this->assertInstanceOf(RememberingInterface::class, $userFake);
     }
 
     /**
@@ -28,13 +28,13 @@ class UserTest extends AbstractTestCase
      */
     public function itReturnsSameRememberToken(): void
     {
-        $userStub = new UserModelStub();
+        $userFake = new UserModelFake();
 
-        $rememberToken = new RememberTokenModelStub();
+        $rememberToken = new RememberTokenModelFake();
         $rememberToken->token = "Token";
 
-        $userStub->setRememberToken($rememberToken);
-        $this->assertSame($rememberToken, $userStub->getRememberToken());
+        $userFake->setRememberToken($rememberToken);
+        $this->assertSame($rememberToken, $userFake->getRememberToken());
     }
 
     /**
@@ -42,12 +42,12 @@ class UserTest extends AbstractTestCase
      */
     public function itReturnsSameRememberTokenString(): void
     {
-        $userStub = new UserModelStub();
+        $userFake = new UserModelFake();
 
-        $rememberToken = new RememberTokenModelStub();
+        $rememberToken = new RememberTokenModelFake();
         $rememberToken->token = "Token";
 
-        $userStub->setRememberToken($rememberToken);
-        $this->assertEquals("Token", $userStub->getRememberToken()->getToken());
+        $userFake->setRememberToken($rememberToken);
+        $this->assertEquals("Token", $userFake->getRememberToken()->getToken());
     }
 }

@@ -115,6 +115,8 @@ Phalcon Auth позволит вам создать систему аутент�
             'api' => [
                 'driver' => 'token',
                 'provider' => 'users',
+                'inputKey' => 'auth_token', //опционально 
+                'storageKey' => 'auth_token', //опционально
             ],
         ],
         'providers' => [
@@ -126,7 +128,7 @@ Phalcon Auth позволит вам создать систему аутент�
     ],
 ];
 ```
-По умолчанию имя поля в запросе и поле в базе данных таблицы `users` равно `auth_token`, например в GET запросе:
+По умолчанию имя параметра в запросе и поле в базе данных таблицы `users` равно `auth_token`, например в GET запросе:
 ```shell
 //GET
 https://yourapidomain/api/v2/users?auth_token=fGaYgdGPSfEgT41r3F4fg33
@@ -150,8 +152,18 @@ Authorization: Bearer fGaYgdGPSfEgT41r3F4fg33
 https://yourapidomain/api/v2/users
 ```
 
-> Помните, что каждый ваш запрос к приложению, должен сопровождаться `auth_token` с токеном доступа.
+Имя параметра и поле в таблицце БД можно изменить с помощью конфига охранника, задав такие параметры как:
 
+```php
+[
+    ... 
+    'inputKey'   => 'token', //имя параметра с токеном
+    'storageKey' => 'token', //имя поля в таблице бд
+    ...
+]
+```
+
+> Помните, что каждый ваш запрос к приложению, должен сопровождаться параметром `auth_token` с токеном доступа.
 
 ## Auth Manager
 
@@ -180,27 +192,31 @@ $di->setShared('auth', function () {
 Это `Sinbadxiii\PhalconAuth\Guard\Session` и `Sinbadxiii\PhalconAuth\Guard\Token`. Указывая в качестве driver один из этих guards вы выбираете, что будете использовать в своем приложении, аутентификацию на основе сессий или токена,
 `'driver' => 'session'` или `'driver' => 'token'`.
 
-Реализуя интерфейс `Sinbadxiii\PhalconAuth\Guard\GuardInterface` вы можете создать своего Guard, добавить его в настройки и расширить список охранников `Sinbadxiii\PhalconAuth\Manager`:
+Предположительно Сессии вы будете использовать в обычных веб-приложениях, а Токен охранника в микро приложениях в качестве api сервисов. Но ничего вам не мешает применять или комбинировать охранников в не стандартных приложениях.
+
+Реализуя интерфейс `Sinbadxiii\PhalconAuth\Guard\GuardInterface` вы можете создать своего Guard, добавить его в настройки и расширить список охранников `Sinbadxiii\PhalconAuth\Manager`, например:
 ```php
 $di->setShared('auth', function () {
     $auth = new \Sinbadxiii\PhalconAuth\Manager();
     
-    $auth->extendGuard('jwt', function($name, $config) use ($auth) {
-        return new JWTGuard($name, $auth->getAdapterProvider($config));
+    $configGuard = $this->getConfig()->auth->guard->web;
+    
+    $auth->addGuard('jwt', function($name, $provider, $config) use ($auth) {
+        return new JWTGuard($name, $auth->getAdapterProvider($configGuard->provider), $configGuard);
     });
     
     return $auth;
-    });
+});
 ```
 ```php
 <?php
-[
 ...
 'guards' => [
-    'web' => [
+    'api' => [
         'driver' => 'jwt',
         'provider' => 'users',
     ],
+]
 ...
 ```
 
@@ -722,7 +738,7 @@ interface RememberingInterface
 
 ## Адаптер поставщика `stream`
 
-Если взять в качестве адаптера поставщиков `users` не `model`, а файл:
+Если взять в качестве адаптера поставщиков `users` не `model`, а файл `stream`:
 
 ```php 
     'auth' => [
@@ -754,7 +770,7 @@ interface RememberingInterface
 ]
 ```
 
-Возвращаемый пользователь в виде модели `Sinbadxiii\PhalconAuth\Adapter\User` будет реализовать интерфейс `Sinbadxiii\PhalconAuth\AuthenticatableInterface`, но не может использовать функцию `RememberMe` (Запомнить меня), т.к.
+Возвращаемый пользователь в виде модели `Sinbadxiii\PhalconAuth\Adapter\User` будет реализовывать интерфейс `Sinbadxiii\PhalconAuth\AuthenticatableInterface`, но не может использовать функцию `RememberMe` (Запомнить меня), т.к.
 не имплементирует интерфейс `Sinbadxiii\PhalconAuth\RememberingInterface` ввиду отсутствия возможности сохранить токен сессии. 
 
 Это стоит учитывать при разработке приложения.
@@ -797,6 +813,61 @@ interface RememberingInterface
 ```
 
 > Не рекомендуется использовать адаптеры `stream` и `memory` в реальных приложениях из-за их функциональной ограниченности и сложности управления пользователями. Это может быть полезно в прототипах приложений и для ограниченных приложений, которые не хранят пользователей в базах данных.
+
+## Создание своего адаптера поставщика
+
+Интерйес поставщика `Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;` имеет вид:
+
+```php 
+<?php
+
+namespace Sinbadxiii\PhalconAuth\Adapter;
+
+use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
+
+interface AdapterInterface
+{
+    public function retrieveByCredentials(array $credentials);
+    public function retrieveById($id);
+    public function validateCredentials(AuthenticatableInterface $user, array $credentials): bool;
+}
+```
+
+Реализовав все методы интерфейса, вы сможете расширить список адаптеров с помощью метода `addProviderAdapter`, например:
+
+```php 
+$di->setShared("auth", function () {
+    $authManager =  new Phalcon\Auth\Manager();
+
+    $security = $this->getSecurity();
+    $configProvider = $this->getConfig()->auth->providers->users;
+
+    $authManager->addProviderAdapter("mongo", function($security, $configProvider) {
+        return new App\Security\Adapter\Mongo($security, $configProvider);
+    } );
+
+    return $authManager;
+});
+```
+
+Так же для создания функционала "Запомнить меня" нужна реализация интерфейса `Sinbadxiii\PhalconAuth\Adapter\AdapterWithRememberTokenInterface`:
+
+```php 
+<?php
+
+declare(strict_types=1);
+
+namespace Sinbadxiii\PhalconAuth\Adapter;
+
+use Sinbadxiii\PhalconAuth\RememberingInterface;
+use Sinbadxiii\PhalconAuth\RememberTokenInterface;
+
+interface AdapterWithRememberTokenInterface
+{
+    public function retrieveByToken($identifier, $token, $user_agent);
+    public function createRememberToken(RememberingInterface $user): RememberTokenInterface;
+}
+```
 
 ## Методы
 

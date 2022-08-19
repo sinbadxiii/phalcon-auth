@@ -6,6 +6,7 @@ namespace Sinbadxiii\PhalconAuth\Guard;
 
 use Phalcon\Di\Di;
 use Phalcon\Support\Helper\Str\StartsWith;
+use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 
 use function is_null;
 
@@ -17,8 +18,19 @@ class Token implements GuardInterface
 {
     use GuardHelper;
 
+    /**
+     * @var string
+     */
     protected string $name;
+
+    /**
+     * @var mixed
+     */
     protected $eventsManager;
+
+    /**
+     * @var mixed
+     */
     protected $request;
 
     /**
@@ -35,18 +47,30 @@ class Token implements GuardInterface
      */
     protected $storageKey;
 
+    /**
+     * @var
+     */
     protected $provider;
 
-    public function __construct($name, $provider, $inputKey = 'auth_token', $storageKey = 'auth_token')
+    /**
+     * @param $name
+     * @param $provider
+     * @param $inputKey
+     * @param $storageKey
+     */
+    public function __construct($name, $provider, $config)
     {
-        $this->name     = $name;
-        $this->provider = $provider;
-        $this->eventsManager  = Di::getDefault()->getShared("eventsManager");
-        $this->request        = Di::getDefault()->getShared("request");
-        $this->inputKey   = $inputKey;
-        $this->storageKey = $storageKey;
+        $this->name          = $name;
+        $this->provider      = $provider;
+        $this->eventsManager = Di::getDefault()->getShared("eventsManager");
+        $this->request       = Di::getDefault()->getShared("request");
+        $this->inputKey      = $config->inputKey ?? "auth_token";
+        $this->storageKey    = $config->storageKey ?? "auth_token";
     }
 
+    /**
+     * @return AuthenticatableInterface | null
+     */
     public function user()
     {
         if (!is_null($this->user)) {
@@ -66,7 +90,11 @@ class Token implements GuardInterface
         return $this->user = $user;
     }
 
-    public function validate(array $credentials = [])
+    /**
+     * @param array $credentials
+     * @return bool
+     */
+    public function validate(array $credentials = []): bool
     {
         if (empty($credentials[$this->inputKey])) {
             return false;
@@ -81,7 +109,10 @@ class Token implements GuardInterface
         return false;
     }
 
-    public function getTokenForRequest()
+    /**
+     * @return string|null
+     */
+    public function getTokenForRequest(): ?string
     {
         $token = $this->request->get($this->inputKey);
 
@@ -92,6 +123,9 @@ class Token implements GuardInterface
         return $token;
     }
 
+    /**
+     * @return string|void
+     */
     private function bearerToken()
     {
         $header = $this->request->getHeader('Authorization');

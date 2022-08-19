@@ -79,10 +79,10 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * @param $name
-     * @return \Sinbadxiii\PhalconAuth\GuardInterface
+     * @param string|null $name
+     * @return \Sinbadxiii\PhalconAuth\Guard\GuardInterface
      */
-    public function guard($name = null): GuardInterface
+    public function guard(?string $name = null): GuardInterface
     {
         $name = $name ?: $this->getDefaultDriver();
 
@@ -93,7 +93,7 @@ class Manager implements ManagerInterface
      * @param $name
      * @return mixed
      */
-    protected function resolve($name)
+    protected function resolve(string $name)
     {
         $configGuard = $this->getConfigGuard($name);
 
@@ -101,26 +101,29 @@ class Manager implements ManagerInterface
             throw new InvalidArgumentException("Auth guard [{$name}] is not defined.");
         }
 
+        $providerAdapter = $this->getAdapterProvider($configGuard->provider);
+
         if (isset($this->customGuards[$configGuard->driver])) {
-            return $this->callCustomGuard($name, $configGuard);
+            return call_user_func(
+                $this->customGuards[$configGuard->driver],
+                $name,
+                $providerAdapter,
+                $configGuard
+            );
         }
 
-        $className = sprintf("\\%s\\Guard\\%s",
+        $guardName = sprintf("\\%s\\Guard\\%s",
             __NAMESPACE__,
-            ucfirst($configGuard->driver));
-
-        $providerAdapter = $this->getAdapterProvider(
-            $configGuard->provider ?? null
+            ucfirst($configGuard->driver)
         );
-        $guard = new $className($name, $providerAdapter);
 
-        if (class_exists($className)) {
-            return $guard;
+        if (!class_exists($guardName)) {
+            throw new InvalidArgumentException(
+                "Auth driver [{$configGuard->driver}] for guard [{$name}] is not defined."
+            );
         }
 
-        throw new InvalidArgumentException(
-            "Auth driver [{$configGuard->driver}] for guard [{$name}] is not defined."
-        );
+        return new $guardName($name, $providerAdapter, $configGuard);
     }
 
     /**
@@ -137,9 +140,15 @@ class Manager implements ManagerInterface
 
         $adapterName = $configProvider->adapter;
 
-        if (isset($this->customProviders[$adapterName])) {
+        if ($adapterName === null) {
+            throw new InvalidArgumentException(
+                "Adapter not assigned in config->auth->providers->".$provider."->adapter = ?"
+            );
+        }
+
+        if (isset($this->customAdapters[$adapterName])) {
             return call_user_func(
-                $this->customProviders[$adapterName],
+                $this->customAdapters[$adapterName],
                 $this->security,
                 $configProvider
             );
@@ -178,7 +187,7 @@ class Manager implements ManagerInterface
      * @param Closure $callback
      * @return $this
      */
-    public function extendGuard($driver, Closure $callback): ManagerInterface
+    public function addGuard($driver, Closure $callback): ManagerInterface
     {
         $this->customGuards[$driver] = $callback;
 
@@ -186,21 +195,11 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * @param string $name
-     * @param \Phalcon\Config\ConfigInterface $config
-     * @return mixed
-     */
-    protected function callCustomGuard(string $name, ConfigInterface $config): mixed
-    {
-        return $this->customGuards[$config->driver]($name, $config);
-    }
-
-    /**
      * @param $name
      * @param Closure $callback
      * @return $this
      */
-    public function extendProviderAdapter($name, Closure $callback): static
+    public function addProviderAdapter($name, Closure $callback): static
     {
         $this->customAdapters[$name] = $callback;
 

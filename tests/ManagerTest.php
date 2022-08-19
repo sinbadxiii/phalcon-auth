@@ -13,7 +13,7 @@ use Sinbadxiii\PhalconAuth\Manager;
 use Sinbadxiii\PhalconAuth\ManagerInterface;
 
 /**
- * Class AuthTest
+ * Class ManagerTest
  * @package Sinbadxiii\PhalconAuth\Tests
  */
 class ManagerTest extends AbstractTestCase

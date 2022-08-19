@@ -6,16 +6,24 @@ use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Phalcon\Di\Di;
 use Sinbadxiii\PhalconAuth\RememberingInterface;
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
-use function var_dump;
 
+/**
+ * Class Model
+ * @package Sinbadxiii\PhalconAuth\Adapter
+ */
 class Model implements AdapterInterface, AdapterWithRememberTokenInterface
 {
+    /**
+     * @var
+     */
     protected $model;
 
+    /**
+     * @var
+     */
     protected $hasher;
 
     /**
-     * Model constructor.
      * @param $hasher
      * @param $config
      */
@@ -25,6 +33,10 @@ class Model implements AdapterInterface, AdapterWithRememberTokenInterface
         $this->model  = $config->model;
     }
 
+    /**
+     * @param array $credentials
+     * @return mixed
+     */
     public function retrieveByCredentials(array $credentials)
     {
         $builder = Di::getDefault()->get('modelsManager')
@@ -42,11 +54,21 @@ class Model implements AdapterInterface, AdapterWithRememberTokenInterface
         return $builder->getQuery()->execute()->getFirst();
     }
 
+    /**
+     * @param $identifier
+     * @return mixed
+     */
     public function retrieveById($identifier)
     {
         return $this->model::findFirst($identifier);
     }
 
+    /**
+     * @param $identifier
+     * @param $token
+     * @param $user_agent
+     * @return void|null
+     */
     public function retrieveByToken($identifier, $token, $user_agent)
     {
         $retrievedModel = $this->model::findFirst($identifier);
