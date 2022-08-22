@@ -6,6 +6,7 @@ namespace Sinbadxiii\PhalconAuth;
 
 use Closure;
 use InvalidArgumentException;
+use Phalcon\Encryption\Security;
 use Sinbadxiii\PhalconAuth\Access\AccessInterface;
 use Phalcon\Di\Di;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
@@ -56,7 +57,7 @@ class Manager implements ManagerInterface
      */
     protected array $accessList = [];
 
-    public function __construct(ConfigInterface $config = null, $security = null)
+    public function __construct(ConfigInterface $config = null, Security $security = null)
     {
         $this->config = $config ?? Di::getDefault()->getShared("config")->auth;
 
@@ -93,12 +94,12 @@ class Manager implements ManagerInterface
      * @param $name
      * @return mixed
      */
-    protected function resolve(string $name)
+    protected function resolve(string $nameGuard)
     {
-        $configGuard = $this->getConfigGuard($name);
+        $configGuard = $this->getConfigGuard($nameGuard);
 
         if (is_null($configGuard)) {
-            throw new InvalidArgumentException("Auth guard [{$name}] is not defined.");
+            throw new InvalidArgumentException("Auth guard [{$nameGuard}] is not defined.");
         }
 
         $providerAdapter = $this->getAdapterProvider($configGuard->provider);
@@ -106,24 +107,24 @@ class Manager implements ManagerInterface
         if (isset($this->customGuards[$configGuard->driver])) {
             return call_user_func(
                 $this->customGuards[$configGuard->driver],
-                $name,
                 $providerAdapter,
-                $configGuard
+                $configGuard,
+                $nameGuard
             );
         }
 
-        $guardName = sprintf("\\%s\\Guard\\%s",
+        $guardDriver = sprintf("\\%s\\Guard\\%s",
             __NAMESPACE__,
             ucfirst($configGuard->driver)
         );
 
-        if (!class_exists($guardName)) {
+        if (!class_exists($guardDriver)) {
             throw new InvalidArgumentException(
-                "Auth driver [{$configGuard->driver}] for guard [{$name}] is not defined."
+                "Auth driver [{$configGuard->driver}] for guard [{$nameGuard}] is not defined."
             );
         }
 
-        return new $guardName($name, $providerAdapter, $configGuard);
+        return new $guardDriver($providerAdapter, $configGuard, $nameGuard);
     }
 
     /**

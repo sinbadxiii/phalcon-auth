@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sinbadxiii\PhalconAuth\Adapter;
 
+use Phalcon\Config\ConfigInterface;
 use Phalcon\Encryption\Security;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 
@@ -18,7 +21,7 @@ abstract class CollectionAdapterAbstract implements AdapterInterface
      * @param $hasher
      * @param $config
      */
-    public function __construct($hasher, $config)
+    public function __construct(Security $hasher, ConfigInterface $config)
     {
         $this->hasher     = $hasher;
         $this->config     = $config;

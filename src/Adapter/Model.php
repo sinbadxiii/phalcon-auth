@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sinbadxiii\PhalconAuth\Adapter;
 
-use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
+use Phalcon\Config\ConfigInterface;
+use Phalcon\Encryption\Security;
 use Phalcon\Di\Di;
+use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberingInterface;
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 
@@ -27,7 +31,7 @@ class Model implements AdapterInterface, AdapterWithRememberTokenInterface
      * @param $hasher
      * @param $config
      */
-    public function __construct($hasher, $config)
+    public function __construct(Security $hasher, ConfigInterface $config)
     {
         $this->hasher = $hasher;
         $this->model  = $config->model;
