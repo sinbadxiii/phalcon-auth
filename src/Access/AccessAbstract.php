@@ -72,7 +72,7 @@ abstract class AccessAbstract extends Injectable implements AccessInterface
      */
     public function isAllowed(string $actionName): bool
     {
-        $isAllowed     = $this->allowedIf();
+        $isAllowed = $this->allowedIf();
 
         if (!empty($this->exceptActions)) {
             if ($isAllowed || in_array($actionName, $this->exceptActions)) {

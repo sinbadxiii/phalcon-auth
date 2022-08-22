@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Guard;
 
+use Phalcon\Config\ConfigInterface;
 use Phalcon\Http\Request;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
@@ -24,9 +25,9 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
     use BasicHelper;
 
     /**
-     * @var string
+     * @var
      */
-    protected $name;
+    protected $nameGuard;
 
     /**
      * @var mixed
@@ -63,12 +64,12 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
     /**
      * @var AdapterInterface
      */
-    protected $provider;
+    protected $adapter;
 
-    public function __construct(string $name, AdapterInterface $provider)
+    public function __construct(AdapterInterface $adapter, ConfigInterface $configGuard, string $nameGuard)
     {
-        $this->name          = $name;
-        $this->provider      = $provider;
+        $this->nameGuard     = $nameGuard;
+        $this->adapter       = $adapter;
         $this->session       = Di::getDefault()->getShared("session");
         $this->cookies       = Di::getDefault()->getShared("cookies");
         $this->eventsManager = Di::getDefault()->getShared("eventsManager");
@@ -82,7 +83,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     public function attempt(array $credentials = [], $remember = false): bool
     {
-        $this->lastUserAttempted = $this->provider->retrieveByCredentials($credentials);
+        $this->lastUserAttempted = $this->adapter->retrieveByCredentials($credentials);
 
         if ($this->hasValidCredentials($this->lastUserAttempted, $credentials)) {
             $this->login($this->lastUserAttempted, $remember);
@@ -106,7 +107,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
         $id = $this->session->get($this->getName());
 
         if (!is_null($id)) {
-            $this->user = $this->provider->retrieveById($id);
+            $this->user = $this->adapter->retrieveById($id);
         }
 
         if (is_null($this->user) && !is_null($recaller = $this->recaller())) {
@@ -127,7 +128,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     protected function hasValidCredentials($user, array $credentials): bool
     {
-        return !is_null($user) && $this->provider->validateCredentials($user, $credentials);
+        return !is_null($user) && $this->adapter->validateCredentials($user, $credentials);
     }
 
     /**
@@ -136,7 +137,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     public function validate(array $credentials = []): bool
     {
-        $this->lastUserAttempted = $this->provider->retrieveByCredentials($credentials);
+        $this->lastUserAttempted = $this->adapter->retrieveByCredentials($credentials);
 
         return $this->hasValidCredentials($this->lastUserAttempted, $credentials);
     }
@@ -147,7 +148,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     protected function userFromRecaller($recaller)
     {
-        $this->viaRemember = ! is_null($user = $this->provider->retrieveByToken(
+        $this->viaRemember = ! is_null($user = $this->adapter->retrieveByToken(
             $recaller->id(), $recaller->token(), $recaller->userAgent()
         ));
 
@@ -179,7 +180,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     public function getName(): string
     {
-        return "auth_{$this->name}_" . sha1(static::class);
+        return "auth_{$this->nameGuard}_" . sha1(static::class);
     }
 
     /**
@@ -187,7 +188,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     public function getRememberName(): string
     {
-        return "remember_{$this->name}_" . sha1(static::class);
+        return "remember_{$this->nameGuard}_" . sha1(static::class);
     }
 
     /**
@@ -204,9 +205,9 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
 
         if ($remember) {
 
-            if (!$this->provider instanceof AdapterWithRememberTokenInterface) {
+            if (!$this->adapter instanceof AdapterWithRememberTokenInterface) {
                 throw new InvalidArgumentException(
-                    "Adapter " . $this->provider::class . " not instanceof AdapterWithRememberTokenInterface"
+                    "Adapter " . $this->adapter::class . " not instanceof AdapterWithRememberTokenInterface"
                 );
             }
 
@@ -226,7 +227,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     public function loginById($id, bool $remember = false)
     {
-        if ( ! is_null($user = $this->provider->retrieveById($id))) {
+        if ( ! is_null($user = $this->adapter->retrieveById($id))) {
             $this->login($user, $remember);
 
             return $user;
@@ -281,7 +282,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     protected function createRememberToken(AuthenticatableInterface $user): RememberTokenInterface
     {
-        return $this->provider->createRememberToken($user);
+        return $this->adapter->createRememberToken($user);
     }
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sinbadxiii\PhalconAuth\Adapter;
 
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;

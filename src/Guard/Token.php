@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Guard;
 
+use Phalcon\Config\ConfigInterface;
 use Phalcon\Di\Di;
 use Phalcon\Support\Helper\Str\StartsWith;
+use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 
 use function is_null;
@@ -21,7 +23,7 @@ class Token implements GuardInterface
     /**
      * @var string
      */
-    protected string $name;
+    protected string $nameGuard;
 
     /**
      * @var mixed
@@ -50,7 +52,7 @@ class Token implements GuardInterface
     /**
      * @var
      */
-    protected $provider;
+    protected $adapter;
 
     /**
      * @param $name
@@ -58,10 +60,10 @@ class Token implements GuardInterface
      * @param $inputKey
      * @param $storageKey
      */
-    public function __construct($name, $provider, $config)
+    public function __construct(AdapterInterface $adapter, ConfigInterface $config, string $nameGuard)
     {
-        $this->name          = $name;
-        $this->provider      = $provider;
+        $this->nameGuard     = $nameGuard;
+        $this->adapter       = $adapter;
         $this->eventsManager = Di::getDefault()->getShared("eventsManager");
         $this->request       = Di::getDefault()->getShared("request");
         $this->inputKey      = $config->inputKey ?? "auth_token";
@@ -82,7 +84,7 @@ class Token implements GuardInterface
         $token = $this->getTokenForRequest();
 
         if ( ! empty($token)) {
-            $user = $this->provider->retrieveByCredentials([
+            $user = $this->adapter->retrieveByCredentials([
                 $this->storageKey => $token,
             ]);
         }
@@ -102,7 +104,7 @@ class Token implements GuardInterface
 
         $credentials = [$this->storageKey => $credentials[$this->inputKey]];
 
-        if ($this->provider->retrieveByCredentials($credentials)) {
+        if ($this->adapter->retrieveByCredentials($credentials)) {
             return true;
         }
 
