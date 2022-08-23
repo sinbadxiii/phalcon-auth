@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Adapter;
 
+use InvalidArgumentException;
+use Exception;
+
 /**
  * Class Stream
  * @package Sinbadxiii\PhalconAuth\Adapter
  */
-class Stream extends CollectionAdapterAbstract implements AdapterInterface
+class Stream extends AbstractAdapter
 {
     /**
      * @return mixed
      * @throws \Exception
      */
-    protected function getData()
+    protected function getProviderStorage(): mixed
     {
         return $this->read($this->config->src);
     }
@@ -22,32 +25,32 @@ class Stream extends CollectionAdapterAbstract implements AdapterInterface
     /**
      * @param $path
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    public function read($path): mixed
+    public function read(string $src): mixed
     {
-        if (!file_exists($path)) {
-            throw new \Exception("file dont exist");
+        if (!file_exists($src)) {
+            throw new Exception($src . " file don't exist");
         }
 
-        $fileData = file_get_contents($path);
+        $fileData = file_get_contents($src);
 
-        return $this->validate($fileData, $path);
+        return $this->validate($fileData, $src);
     }
 
     /**
      * @param $string
      * @param $filepath
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
-    private function validate($string, $filepath): mixed
+    private function validate(mixed $fileData, string $src): mixed
     {
-        $decoded = json_decode($string, true);
+        $decoded = json_decode($fileData, true);
 
         if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new \InvalidArgumentException(
-                $filepath . ' json_decode error: ' . json_last_error_msg()
+            throw new InvalidArgumentException(
+                $src . ' json_decode error: ' . json_last_error_msg()
             );
         }
 

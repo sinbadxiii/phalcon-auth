@@ -33,8 +33,8 @@ return [
         ],
 //                'adapter' => 'memory',
 //                'data'   => [
-//                    0 => ["id" => 0, "name" => "admin", 'password' => 'admin', "email" => "admin@admin.ru"],
-//                    1 => ["id" => 1, "name" => "admin1", 'password' => 'admin1', "email" => "admin1@admin.ru"],
+//                    0 => ["name" => "admin", 'password' => 'admin', "email" => "admin@admin.ru"],
+//                    1 => ["name" => "admin1", 'password' => 'admin1', "email" => "admin1@admin.ru"],
 //                ]
     ],
 ];

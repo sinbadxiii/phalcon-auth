@@ -23,14 +23,14 @@ use function call_user_func;
 class Manager implements ManagerInterface
 {
     /**
-     * @var mixed
+     * @var ConfigInterface
      */
     protected ConfigInterface $config;
 
     /**
-     * @var mixed
+     * @var Security
      */
-    protected $security;
+    protected Security $security;
 
     /**
      * @var array
@@ -57,6 +57,10 @@ class Manager implements ManagerInterface
      */
     protected array $accessList = [];
 
+    /**
+     * @param ConfigInterface|null $config
+     * @param Security|null $security
+     */
     public function __construct(ConfigInterface $config = null, Security $security = null)
     {
         $this->config = $config ?? Di::getDefault()->getShared("config")->auth;
@@ -72,7 +76,7 @@ class Manager implements ManagerInterface
 
     /**
      * @param string $name
-     * @return \Phalcon\Config\ConfigInterface|null
+     * @return ConfigInterface|null
      */
     protected function getConfigGuard(string $name): ?ConfigInterface
     {
@@ -81,7 +85,7 @@ class Manager implements ManagerInterface
 
     /**
      * @param string|null $name
-     * @return \Sinbadxiii\PhalconAuth\Guard\GuardInterface
+     * @return GuardInterface
      */
     public function guard(?string $name = null): GuardInterface
     {
@@ -129,7 +133,7 @@ class Manager implements ManagerInterface
 
     /**
      * @param string|null $provider
-     * @return mixed|\Sinbadxiii\PhalconAuth\Adapter\AdapterInterface|void
+     * @return mixed|AdapterInterface|void
      */
     public function getAdapterProvider(string $provider = null)
     {
@@ -143,7 +147,7 @@ class Manager implements ManagerInterface
 
         if ($adapterName === null) {
             throw new InvalidArgumentException(
-                "Adapter not assigned in config->auth->providers->".$provider."->adapter = ?"
+                "Adapter not assigned in config->auth->providers->" . $provider . "->adapter = ?"
             );
         }
 
@@ -217,7 +221,7 @@ class Manager implements ManagerInterface
 
     /**
      * @param AccessInterface $access
-     * @return static
+     * @return $this
      */
     public function setAccess(AccessInterface $access): static
     {
@@ -248,6 +252,10 @@ class Manager implements ManagerInterface
         return $this;
     }
 
+    /**
+     * @param string $accessName
+     * @return AccessInterface|null
+     */
     public function access(string $accessName): ?AccessInterface
     {
         if (!isset($this->accessList[$accessName]) || !class_exists($this->accessList[$accessName])) {

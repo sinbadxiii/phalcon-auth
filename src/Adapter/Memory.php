@@ -4,17 +4,25 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Adapter;
 
+use InvalidArgumentException;
+
 /**
  * Class Memory
  * @package Sinbadxiii\PhalconAuth\Adapter
  */
-class Memory extends CollectionAdapterAbstract implements AdapterInterface
+class Memory extends AbstractAdapter
 {
     /**
-     * @return array
+     * @return mixed
      */
-    protected function getData(): array
+    protected function getProviderStorage(): mixed
     {
+        if (!$this->config->has("data")) {
+            throw new InvalidArgumentException(
+                "Сonfig key 'datа' with user data array empty or does not exist"
+            );
+        }
+
         return $this->config->data->toArray();
     }
 }

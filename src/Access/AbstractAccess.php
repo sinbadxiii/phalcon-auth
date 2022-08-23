@@ -9,10 +9,10 @@ use Phalcon\Di\Injectable;
 use function in_array;
 
 /**
- * Class AccessAbstract
+ * Class AbstractAccess
  * @package Sinbadxiii\PhalconAuth\Access
  */
-abstract class AccessAbstract extends Injectable implements AccessInterface
+abstract class AbstractAccess extends Injectable implements AccessInterface
 {
     /**
      * @var array
@@ -64,7 +64,9 @@ abstract class AccessAbstract extends Injectable implements AccessInterface
     }
 
     public function redirectTo()
-    {}
+    {
+
+    }
 
     /**
      * @param string $actionName
