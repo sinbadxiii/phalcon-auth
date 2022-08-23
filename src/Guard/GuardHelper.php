@@ -30,7 +30,7 @@ trait GuardHelper
     }
 
     /**
-     * @param \Sinbadxiii\PhalconAuth\AuthenticatableInterface $user
+     * @param AuthenticatableInterface $user
      * @return $this
      */
     public function setUser(AuthenticatableInterface $user)

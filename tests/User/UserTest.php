@@ -17,7 +17,12 @@ class UserTest extends AbstractTestCase
      */
     public function itImplementModel(): void
     {
-        $userFake = new UserModelFake();
+        $userFake = new UserModelFake(
+            [
+                'id' => 1, "name" => 'userFake',
+                "email" => "userFake@email.com"
+            ]
+        );
 
         $this->assertInstanceOf(AuthenticatableInterface::class, $userFake);
         $this->assertInstanceOf(RememberingInterface::class, $userFake);
@@ -28,7 +33,12 @@ class UserTest extends AbstractTestCase
      */
     public function itReturnsSameRememberToken(): void
     {
-        $userFake = new UserModelFake();
+        $userFake = new UserModelFake(
+            [
+                'id' => 1, "name" => 'userFake',
+                "email" => "userFake@email.com"
+            ]
+        );
 
         $rememberToken = new RememberTokenModelFake();
         $rememberToken->token = "Token";
@@ -42,7 +52,12 @@ class UserTest extends AbstractTestCase
      */
     public function itReturnsSameRememberTokenString(): void
     {
-        $userFake = new UserModelFake();
+        $userFake = new UserModelFake(
+            [
+                'id' => 1, "name" => 'userFake',
+                "email" => "userFake@email.com"
+            ]
+        );
 
         $rememberToken = new RememberTokenModelFake();
         $rememberToken->token = "Token";

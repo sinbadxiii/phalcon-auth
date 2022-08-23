@@ -12,17 +12,12 @@ use Phalcon\Mvc\Dispatcher;
  * Class Authenticate
  * @package Sinbadxiii\PhalconAuth\Access
  */
-class Authenticate extends Injectable implements AuthenticatesRequest
+class Authenticate extends Injectable implements AuthenticatesRequestInterface
 {
     /**
      * @var array
      */
     protected array $accessList = [];
-
-    /**
-     * @var Dispatcher
-     */
-    protected Dispatcher $dispatcher;
 
     /**
      * @var string
@@ -44,8 +39,7 @@ class Authenticate extends Injectable implements AuthenticatesRequest
      */
     public function beforeExecuteRoute(Event $event, Dispatcher $dispatcher): void
     {
-        $this->dispatcher = $dispatcher;
-        $this->actionName = $this->dispatcher->getActionName();
+        $this->actionName = $dispatcher->getActionName();
 
         $this->authenticate();
     }

@@ -5,6 +5,7 @@ namespace Sinbadxiii\PhalconAuth\Tests\Access;
 use Phalcon\Di\Injectable;
 use Sinbadxiii\PhalconAuth\Access\Authenticate;
 use Sinbadxiii\PhalconAuth\Access\AuthenticatesRequest;
+use Sinbadxiii\PhalconAuth\Access\AuthenticatesRequestInterface;
 use Sinbadxiii\PhalconAuth\Tests\AbstractTestCase;
 
 /**
@@ -18,7 +19,7 @@ class AuthenticateTest extends AbstractTestCase
      */
     public function implementFromAuthenticatesRequest(): void
     {
-        $this->assertInstanceOf(AuthenticatesRequest::class, new Authenticate());
+        $this->assertInstanceOf(AuthenticatesRequestInterface::class, new Authenticate());
         $this->assertInstanceOf(Injectable::class, new Authenticate());
     }
 }

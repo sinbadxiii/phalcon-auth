@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Adapter;
 
-use Phalcon\Config\ConfigInterface;
-use Phalcon\Encryption\Security;
 use Phalcon\Di\Di;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberingInterface;
@@ -15,37 +13,25 @@ use Sinbadxiii\PhalconAuth\RememberTokenInterface;
  * Class Model
  * @package Sinbadxiii\PhalconAuth\Adapter
  */
-class Model implements AdapterInterface, AdapterWithRememberTokenInterface
+class Model extends AbstractAdapter implements AdapterWithRememberTokenInterface
 {
     /**
-     * @var
+     * @return mixed
      */
-    protected $model;
-
-    /**
-     * @var
-     */
-    protected $hasher;
-
-    /**
-     * @param $hasher
-     * @param $config
-     */
-    public function __construct(Security $hasher, ConfigInterface $config)
+    protected function getProviderStorage(): mixed
     {
-        $this->hasher = $hasher;
-        $this->model  = $config->model;
+        return $this->config->model;
     }
 
     /**
      * @param array $credentials
      * @return mixed
      */
-    public function retrieveByCredentials(array $credentials)
+    public function retrieveByCredentials(array $credentials): ?AuthenticatableInterface
     {
         $builder = Di::getDefault()->get('modelsManager')
             ->createBuilder()
-            ->from([$this->model]);
+            ->from([$this->getProviderStorage()]);
 
         foreach ($credentials as $key => $value) {
             if ($key === 'password') {
@@ -60,11 +46,11 @@ class Model implements AdapterInterface, AdapterWithRememberTokenInterface
 
     /**
      * @param $identifier
-     * @return mixed
+     * @return AuthenticatableInterface|null
      */
-    public function retrieveById($identifier)
+    public function retrieveById($identifier): ?AuthenticatableInterface
     {
-        return $this->model::findFirst($identifier);
+        return $this->getProviderStorage()::findFirst($identifier);
     }
 
     /**
@@ -73,18 +59,18 @@ class Model implements AdapterInterface, AdapterWithRememberTokenInterface
      * @param $user_agent
      * @return void|null
      */
-    public function retrieveByToken($identifier, $token, $user_agent)
+    public function retrieveByToken($identifier, $token, $user_agent): ?AuthenticatableInterface
     {
-        $retrievedModel = $this->model::findFirst($identifier);
+        $retrievedModel = $this->getProviderStorage()::findFirst($identifier);
 
         if (!$retrievedModel) {
-            return;
+            return null;
         }
 
         $rememberTokenModel = $retrievedModel->getRememberToken($token);
 
         if (!$rememberTokenModel) {
-            return;
+            return null;
         }
 
         $rememberToken = $rememberTokenModel->getToken();

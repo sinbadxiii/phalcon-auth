@@ -16,6 +16,13 @@ class UserModelFake implements AuthenticatableInterface, RememberingInterface
     public string $password;
     public RememberTokenInterface $remember_token;
 
+    public function __construct($data)
+    {
+        foreach ($data as $field => $value) {
+            $this->$field = $value;
+        }
+    }
+
     public function getAuthIdentifier(): int
     {
         return $this->id;
@@ -41,5 +48,10 @@ class UserModelFake implements AuthenticatableInterface, RememberingInterface
     public function getRememberToken(string $token = null): ?RememberTokenInterface
     {
         return $this->remember_token;
+    }
+
+    public function getId()
+    {
+        return $this->id;
     }
 }

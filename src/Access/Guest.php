@@ -8,7 +8,7 @@ namespace Sinbadxiii\PhalconAuth\Access;
  * Class Guest
  * @package Sinbadxiii\PhalconAuth\Access
  */
-class Guest extends AccessAbstract
+class Guest extends AbstractAccess
 {
     /**
      * @return bool

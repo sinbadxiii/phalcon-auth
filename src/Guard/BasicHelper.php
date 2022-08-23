@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sinbadxiii\PhalconAuth\Guard;
 
 use Phalcon\Http\Request;
-use Sinbadxiii\PhalconAuth\Exception\UnauthorizedHttpException;
 
 /**
  * Trait BasicHelper
@@ -32,7 +31,7 @@ trait BasicHelper
     }
 
     /**
-     * @param \Phalcon\Http\Request $request
+     * @param Request $request
      * @param string $field
      * @param array $extraConditions
      * @return bool
@@ -49,7 +48,7 @@ trait BasicHelper
     }
 
     /**
-     * @param \Phalcon\Http\Request $request
+     * @param Request $request
      * @param string $field
      * @return array
      */

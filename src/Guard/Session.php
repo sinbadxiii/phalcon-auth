@@ -11,8 +11,8 @@ use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterWithRememberTokenInterface;
 use InvalidArgumentException;
 use Phalcon\Di\Di;
-
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
+
 use function is_null;
 
 /**
@@ -166,7 +166,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
     }
 
     /**
-     * @return void
+     * @return mixed
      */
     protected function getRememberData()
     {
@@ -256,7 +256,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
     }
 
     /**
-     * @param \Sinbadxiii\PhalconAuth\AuthenticatableInterface $user
+     * @param AuthenticatableInterface $user
      * @return void
      * @throws \JsonException
      */

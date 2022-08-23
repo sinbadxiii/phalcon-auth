@@ -8,7 +8,7 @@ namespace Sinbadxiii\PhalconAuth\Access;
  * Class Auth
  * @package Sinbadxiii\PhalconAuth\Access
  */
-class Auth extends AccessAbstract
+class Auth extends AbstractAccess
 {
     /**
      * @return bool
