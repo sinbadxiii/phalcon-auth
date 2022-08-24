@@ -914,12 +914,9 @@ interface AdapterInterface
 $di->setShared("auth", function () {
     $authManager =  new Phalcon\Auth\Manager();
 
-    $security = $this->getSecurity();
-    $configProvider = $this->getConfig()->auth->providers->users;
-
     $authManager->addProviderAdapter("mongo", function($security, $configProvider) {
         return new App\Security\Adapter\Mongo($security, $configProvider);
-    } );
+    });
 
     return $authManager;
 });
@@ -934,12 +931,13 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Adapter;
 
+use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberingInterface;
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 
 interface AdapterWithRememberTokenInterface
 {
-    public function retrieveByToken($identifier, $token, $user_agent);
+    public function retrieveByToken($identifier, $token, $user_agent): ?AuthenticatableInterface;
     public function createRememberToken(RememberingInterface $user): RememberTokenInterface;
 }
 ```

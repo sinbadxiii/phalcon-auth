@@ -19,7 +19,8 @@ return [
 //            'users' => [
 //                'adapter' => 'stream',
 //                'src'   => __DIR__ . "/users.json",
-//                'passsword_crypted' => false
+//                'passsword_crypted' => false,
+//                'model'  => App\Models\UserSimple::class,
 //            ],
 /**          file format .json
             {
@@ -35,6 +36,7 @@ return [
 //                'data'   => [
 //                    0 => ["name" => "admin", 'password' => 'admin', "email" => "admin@admin.ru"],
 //                    1 => ["name" => "admin1", 'password' => 'admin1', "email" => "admin1@admin.ru"],
-//                ]
+//                ],
+//                'model'  => App\Models\UserSimple::class,
     ],
 ];
