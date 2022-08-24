@@ -21,18 +21,23 @@ class AdapterMemoryTest extends AbstractTestCase
     /** @test */
     public function itShouldReturnFromAdapterMemoryUser()
     {
-        $this->config = new Config(require (__DIR__ . "/../../config/auth.php"));
-
-        $this->config->auth->providers->users->adapter = "memory";
-        $this->config->auth->providers->users->model = UserModelFake::class;
-
         $data = [
             0 => ["id" => 0, "name" => "user", "password" => "54325"],
             1 => ["id" => 1, "name" => "user2", "password" => "54225"],
             2 => ["id" => 2, "name" => "user3", "password" => "34225"],
         ];
 
-        $this->config->auth->providers->users->data = $data;
+        $this->config = new Config(
+            [
+                'auth' => [
+                    'providers' => [
+                        'users' => [
+                            'adapter' => "memory",
+                            'model' => UserModelFake::class,
+                            'data' => $data
+                        ]
+                    ]]]
+        );
 
         $this->security = new Security();
         $this->manager = new Manager(

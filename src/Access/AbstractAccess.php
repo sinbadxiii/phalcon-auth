@@ -65,7 +65,6 @@ abstract class AbstractAccess extends Injectable implements AccessInterface
 
     public function redirectTo()
     {
-
     }
 
     /**
