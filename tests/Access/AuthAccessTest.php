@@ -54,7 +54,7 @@ class AuthAccessTest extends AbstractTestCase
     public function isAllowedTrueWhenExceptActionAuthAccess(): void
     {
         $authAccess = new AuthStub();
-        $authAccess->except("action");
+        $authAccess->setExceptActions("action");
         $authAccess->access = false;
         $isAllowed = $authAccess->isAllowed("action");
 
@@ -67,7 +67,7 @@ class AuthAccessTest extends AbstractTestCase
     public function isAllowedTrueWhenOnlyActionAuthAccess(): void
     {
         $authAccess = new AuthStub();
-        $authAccess->only("action1");
+        $authAccess->setOnlyActions("action1");
 
         $authAccess->access = true;
 
@@ -82,7 +82,7 @@ class AuthAccessTest extends AbstractTestCase
     public function isAllowedFalseWhenOnlyActionAuthAccess(): void
     {
         $authAccess = new AuthStub();
-        $authAccess->only("action1");
+        $authAccess->setOnlyActions("action1");
 
         $authAccess->access = false;
 

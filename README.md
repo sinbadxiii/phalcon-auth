@@ -1,25 +1,14 @@
 # Phalcon Auth
 
-You can see an example of an application with authentication here [sinbadxiii/phalcon-auth-example](https://github.com/sinbadxiii/phalcon-auth-example)
-
 ![Banner](https://github.com/sinbadxiii/images/blob/master/phalcon-auth/phalcon-auth-logo.png?raw=true)
+
+You can see an example of an application with authentication here [sinbadxiii/phalcon-auth-example](https://github.com/sinbadxiii/phalcon-auth-example)
 
 <p align="center">
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square" alt="Software License"></img></a>
 <a href="https://packagist.org/packages/sinbadxiii/phalcon-auth"><img src="https://img.shields.io/packagist/dt/sinbadxiii/phalcon-auth?style=flat-square" alt="Packagist Downloads"></img></a>
 <a href="https://github.com/sinbadxiii/phalcon-auth/releases"><img src="https://img.shields.io/github/release/sinbadxiii/phalcon-auth?style=flat-square" alt="Latest Version"></img></a>
 </p>
-
-- ~~*Session and Cookie Based Authentication*~~
-- ~~*Token Based Authentication*~~
-- ~~*Extension with custom guards*~~
-- ~~*Guest access to controllers*~~
-- ~~*[Authentication with JWT](https://github.com/sinbadxiii/phalcon-auth-jwt)*~~
-- ~~*HTTP Basic authentication*~~
-- Activation by email (it is required to standardize work with mail)
-- Password recovery (it is required to standardize work with mail)
-
-![Banner](https://github.com/sinbadxiii/images/blob/master/phalcon-auth/auth-scheme.webp?raw=true)
 
 ## Extended guards
 * [JWT Guard](https://github.com/sinbadxiii/phalcon-auth-jwt)
@@ -44,13 +33,15 @@ Require the project using composer:
 
 ## Introduction
 
+![Banner](https://github.com/sinbadxiii/images/blob/master/phalcon-auth/auth-scheme.webp?raw=true)
+
 Phalcon Auth позволит вам создать систему аутентификации в вашем веб-приложении.
 
 Система аутентификации имеет такие понятия как «Охранники» (Guard) и «Поставщики» (Provider), охранники определяют, как пользователи будут аутентифицироваться, например, используя стандартные Хранилища Сессии и файлов куки.
 
-Провайдеры определяют, какие данные будут браться в качестве пользователей, и так же откуда будут извлекаться эти пользователи. Откуда будут извлекаться данные пользователей определяют Адаптеры (Adapter). По умолчанию это обычно `model` - `Phalcon\Model` и построитель запросов к базе данных.
+Провайдеры определяют, какие данные будут браться в качестве пользователей, и так же откуда будут извлекаться эти пользователи. Откуда будут извлекаться данные пользователей определяют Адаптеры (Adapter). Обычно это `Phalcon\Mvc\Model` и построитель запросов к базе данных.
 
-Кроме того есть другие варианты адаптеров: stream - файл, memory - массив с данными. Можно создать свой адаптер, реализуя интерфейс адаптера. Об этом поговорим чуть позже. 
+Кроме того есть другие варианты адаптеров: файл или массив с данными. Можно создать свой адаптер, реализуя интерфейс адаптера. Об этом поговорим чуть позже. 
 
 > Guards и Providers не следует путать с «roles» и «permissions» [ACL](https://docs.phalcon.io/4.0/en/acl). Auth и ACL  следует использовать вместе, если требуется более точная надстройка доступа к узлам приложения. Например использовать роль `manager` со специфическими правами.
 
@@ -66,74 +57,117 @@ Phalcon Auth позволит вам создать систему аутент�
 
 ## Подготовка базы данных
  
-Используя поставщика пользователей `users`, а в качестве адаптера данных модель `App\Models\User` в папке `app/Models` приложения, потребуется создать таблицу `users`.
+Для использования данных из бд, понадобится создать таблицу `users`.
 
 Если необходимо будет использовать функцию "Запомнить меня" - `RememberMe`, которая позволяет хранить сеанс аутентификации пользователя длительное время, то так же понадобится таблица `users_remember_tokens`, ну и соответственно ее модель в виде `App\Models\RememberToken`.
 
 Для быстрого создания таблиц вы можете импортировать файлы из папки `db/users.sql`, `db/users_remember_tokens.sql`, а так же `db/create_auth_token_users.sql`, если будете использовать в качестве Guard - Token, которому необходимо поле `auth_token` для корректной работы.
 
-### Пример конфигурационного файла для использования Сессий 
+## Managers
 
-Итак, типичный пример конфигурационного файла приложения на основе Сессий. Файл может находится в папке конфигов `config/auth.php` или в глобальном файле `config.php` с доступом по ключу `auth` (`$this->config->auth`).
+При создании аутентификации вы можете воспользоваться одним из двух менеджеров: `Sinbadxiii\PhalconAuth\Manager` или `Sinbadxiii\PhalconAuth\ManagerFactory`.
 
-```php
-<?php
-[
-    'auth' => [
-        'defaults' => [
-            'guard' => 'web'
-        ],
-        'guards' => [
-            'web' => [
-                'driver' => 'session',
-                'provider' => 'users',
-            ],
-        ],
-        'providers' => [
-            'users' => [
-                'adapter' => 'model',
-                'model'  => App\Models\User::class,
-            ]
-        ]
-    ],
-];
-```
+## Manager
 
-Т.е. приложение будет использовать `guard = web`. В свою очередь Охранник web основан на драйвере `session` и использует поставщика пользователей `users`, которые извлекаются через Адаптера `model` - `App\Models\Users`.
-Данный конфигурационный файл позволяет создавать различные комбинации охранников и поставщиков, разделяя доступы в вашем приложений.
-
-### Пример конфигурационного файла для использования Токена
+Если вы следуете философии фреймворка Phalcon и хотите вручную настроить все компоненты аутентификации, то вам понадобится класс `Sinbadxiii\PhalconAuth\Manager` - с помощью данного менджера можно настроить охранника, адаптер поставщиков и распределить доступы пользователям.  
 
 ```php
-<?php
-[
-    'auth' => [
-        'defaults' => [
-            'guard' => 'api'
-        ],
-        'guards' => [
-            'api' => [
-                'driver' => 'token',
-                'provider' => 'users',
-                'inputKey' => 'auth_token', //опционально 
-                'storageKey' => 'auth_token', //опционально
-            ],
-        ],
-        'providers' => [
-            'users' => [
-                'adapter' => 'model',
-                'model'  => App\Models\User::class,
-            ]
-        ]
-    ],
+use Sinbadxiii\PhalconAuth\Manager;
+use App\Models\User;
+use Sinbadxiii\PhalconAuth\Adapter\Model;
+use Sinbadxiii\PhalconAuth\Guard\Session;
+
+$auth = new Manager();
+
+$configAdapter = [
+    'model' => User::class,
 ];
+
+$adapter = new Model($this->getSecurity(), $configAdapter);
+$guard   = new Session(
+    $adapter,
+    $this->getSession(),
+    $this->getCookies(),
+    $this->getRequest(),
+    $this->getEventsManager()
+);
+
+$auth->addGuard("web", $guard, true);
+
+return $auth;
 ```
-По умолчанию имя параметра в запросе и поле в базе данных таблицы `users` равно `auth_token`, например в GET запросе:
+
+В результате получился менеджер, который будет искать пользователей через модель `User` в таблице базе данных `users`.
+Результат аутентификации будет храниться в сессии, и куках, если выбрать "Запомнить меня".
+В качестве других аргументов нужно передать сервис провайдеры `$this->security`, `$this->session`, `$this->cookies`, `$this->request`, `$this->eventsManager`, которые будут необходимы при дальнейшем использовании охранников и адаптеров поставщиков.
+
+- public <b>addGuard</b>(string $nameGuard, GuardInterface $guard, bool $isDefault = false) - добавить охранника
+- public <b>guard</b>(?string $name = null) - получить конкретного охранника или по заданного по дефолту 
+- public <b>setDefaultGuard</b>(GuardInterface $guard) - задать охранника по дефолту 
+- public <b>getDefaultGuard</b>() - получить охранника по дефолту 
+- public <b>acces</b>s(string $accessName) - назначить контроллеру определенный доступ 
+- public <b>getAccess</b>(string $accessName) - назначить требуемый доступ 
+- public <b>setAccess</b>(AccessInterface $access) - получить требуемый доступ 
+- public <b>setAccessList</b>(array $accessList) - зарегистрировать список доступов 
+- public <b>addAccessList</b>(array $accessList) - добавить список доступов 
+- public <b>except</b>(...$actions) - исключенные экшны из проверки доступа 
+- public <b>only</b>(...$actions) - обязательные экшны для проверки доступа 
+- public <b>__call</b>() - magic __call
+
+## Guards
+
+На данный момент существует два вида Охранников, которые покроют 90% типовых задач создания аутентификации веб-приложений.
+Это `Sinbadxiii\PhalconAuth\Guard\Session` и `Sinbadxiii\PhalconAuth\Guard\Token`, указывая одного из этих охранников вы выбираете, что будете использовать в своем приложении, аутентификацию на основе сессий или токена.
+
+Предположительно Сессии вы будете использовать в веб-приложениях после логина в личный кабинет,а Токен, например, в микро приложениях в качестве api сервисов. Но ничего вам не мешает применять или комбинировать охранников в нестандартных приложениях.
+
+Чтобы воспользоваться `Sinbadxiii\PhalconAuth\Guard\Token`, необходимо в качестве второго аргумента передать конфиг с названиями имя параметра запроса и поля в хранилище данных пользователей, например, поле таблицы `users` в бд:
+
+```php
+[
+    ... 
+    'inputKey'   => 'auth_token', //имя параметра с токеном
+    'storageKey' => 'auth_token', //имя поля в хранилище пользователей
+    ...
+]
+```
+
+```php
+use Sinbadxiii\PhalconAuth\Manager;
+use App\Models\User;
+use Sinbadxiii\PhalconAuth\Adapter\Model;
+use Sinbadxiii\PhalconAuth\Guard\Token;
+
+$auth = new Manager();
+
+$configAdapter = [
+    'model' => User::class,
+];
+
+$configGuard = [
+    'inputKey'   => 'auth_token',
+    'storageKey' => 'auth_token',
+];
+
+$adapter = new Model($this->getSecurity(), $configAdapter);
+$guard   = new Token(
+    $adapter,
+    $configGuard
+    $this->getRequest()
+);
+
+$auth->addGuard("api", $guard, true);
+
+return $auth;
+```
+
+Соответствено GET запрос должен будет иметь вид: 
+
 ```shell
 //GET
 https://yourapidomain/api/v2/users?auth_token=fGaYgdGPSfEgT41r3F4fg33
 ```
-или POST:
+POST запрос:
 ```shell
 //POST
 //params POST request
@@ -143,7 +177,6 @@ https://yourapidomain/api/v2/users?auth_token=fGaYgdGPSfEgT41r3F4fg33
 
 https://yourapidomain/api/v2/users
 ```
-
 или заголовок `Authorization`:
 
 ```shell
@@ -152,75 +185,36 @@ Authorization: Bearer fGaYgdGPSfEgT41r3F4fg33
 https://yourapidomain/api/v2/users
 ```
 
-Имя параметра и поле в таблице БД можно изменить с помощью конфига охранника, задав такие параметры как:
-
-```php
-[
-    ... 
-    'inputKey'   => 'my_custom_token_key', //имя параметра с токеном
-    'storageKey' => 'my_custom_storage_key', //имя поля в таблице бд
-    ...
-]
-```
-
 > Помните, что каждый ваш запрос к приложению, должен сопровождаться параметром `auth_token` с токеном доступа.
 
-## Auth Manager
+## Создание своего Охранника
 
-С помощью `Sinbadxiii\PhalconAuth\Manager` можно создать сервис провайдер аутентификации:
-
-```php
-$di->setShared('auth', function () {
-    return new \Sinbadxiii\PhalconAuth\Manager();
-});
-```
-
-`Sinbadxiii\PhalconAuth\Manager` по умолчанию использует конфигурацию из `$this->config->auth`, если вы хотите использовать другую конфигурацию, отличную от `$this->config->auth` то можно передать в качестве первого аргумента другой конфиг:
-
-```php
-$di->setShared('auth', function () {
-    $authConfig = $this->getConfig()->get("auth_other");
-    
-    return new \Sinbadxiii\PhalconAuth\Manager($authConfig);
-});
-```
-
-В качестве второго аргумента можно передать отличный от глобального сервис провайдера `$this->security`.
-## Guards
-
-На данный момент существует два вида Охранников, которые покроют 90% типовых задач аутентификации веб-приложений.
-Это `Sinbadxiii\PhalconAuth\Guard\Session` и `Sinbadxiii\PhalconAuth\Guard\Token`. Указывая в качестве driver один из этих guards вы выбираете, что будете использовать в своем приложении, аутентификацию на основе сессий или токена,
-`'driver' => 'session'` или `'driver' => 'token'`.
-
-Предположительно Сессии вы будете использовать в веб-приложениях после логина в личный кабинет, например, а Токен в микро приложениях в качестве api сервисов. Но ничего вам не мешает применять или комбинировать охранников в нестандартных приложениях.
-
-Реализуя интерфейс `Sinbadxiii\PhalconAuth\Guard\GuardInterface` вы можете создать своего Guard, добавить его в настройки и расширить список охранников `Sinbadxiii\PhalconAuth\Manager`, например:
-```php
-$di->setShared('auth', function () {
-    $auth = new \Sinbadxiii\PhalconAuth\Manager();    
-    
-    $auth->addGuard('jwt', function($adapterProvider, $configGuard, $nameGuard) {
-        return new JWTGuard($adapterProvider, $configGuard, $nameGuard);
-    });
-    
-    return $auth;
-});
-```
-```php
+```php 
 <?php
-...
-'guards' => [
-    'api' => [
-        'driver' => 'jwt',
-        'provider' => 'users',
-    ],
-]
-...
+
+declare(strict_types=1);
+
+namespace Sinbadxiii\PhalconAuth\Guard;
+
+use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
+
+interface GuardInterface
+{
+    public function check(): bool;
+    public function user();
+    public function setUser(AuthenticatableInterface $user);
+    public function id();
+    public function guest(): bool;
+    public function validate(array $credentials = []): bool;
+}
 ```
+
+Реализуя интерфейс `Sinbadxiii\PhalconAuth\Guard\GuardInterface` вы можете создать своего Guard.
 
 ## Access
 
-С помощью Доступов (Access) вы можете разрешать или запрещать доступ к тем или иным областям приложения, например в контроллер профиля пользователя разрешен доступ только аутентифицированным пользователям:
+С помощью Доступов (Access) вы можете задавать определенный доступ к тем или иным областям приложения, например в контроллер профиля пользователя разрешен доступ только аутентифицированным пользователям.
+
 ```php 
 <?php
 
@@ -240,7 +234,6 @@ class ProfileController extends ControllerBase
     }
 }
 ```
-
 В то время как к контроллеру регистрации, например, нужен доступ только неаутентифицированным пользователям - гостям:
 
 ```php 
@@ -262,6 +255,7 @@ class RegisterController extends ControllerBase
     }
 }
 ```
+Задается доступ в конструкторе контроллера `onConstruct()`.
 
 Из коробки есть два основных вида доступа - аутентифицированный и гостевой:
 
@@ -363,9 +357,9 @@ namespace Sinbadxiii\PhalconAuth\Access;
  */
 interface AccessInterface
 {
-    public function except(...$actions): void;
+    public function setExceptActions(...$actions): void;
     public function getExceptActions(): array;
-    public function only(...$actions): void;
+    public function setOnlyActions(...$actions): void;
     public function getOnlyActions(): array;
     public function isAllowed(): bool;
     public function redirectTo();
@@ -440,41 +434,10 @@ class AuthWithBasic extends AbstractAccess
     }
 }
 ```
-Метод `except()` позволяет добавить список экшнов, который нужно будет исключить:
-```php 
-<?php
-
-declare(strict_types=1);
-
-namespace App\Controllers;
-
-class OrdersController extends ControllerBase
-{
-    public function onConstruct()
-    {
-        $this->auth->access("auth")->except("statistic", "reports");
-    }
-
-    public function indexAction()
-    {
-    }
-    
-    public function statisticAction()
-    {
-    }
-    
-    public function reportsAction()
-    {
-    }
-}
-```
-означает, что к контроллеру `OrdersController` разрешается доступ только аутентифицированным пользователям, кроме экшнов `statisticAction`, `reportsAction`.
-
-Метод `only()` имеет противоположную функцию, только перечисленным в нем экшнам будет запрашиваться требуемый доступ.
 
 ## Регистрация доступов
 
-Доступы должны быть зарегистрированы в системе аутентификации, если этого не сделать, то будет выдаваться ошибка, типа:
+Доступы должны быть зарегистрированы в системе аутентификации, если этого не сделать, то при запросе доступа `$this->auth->access("auth")` будет выдаваться ошибка, типа:
 `Access with 'auth' name is not included in the access list`. 
 
 Чтобы зарегистрировать доступы в системе, необходимо создать некоторое промежуточное программное обеспечение, подтипа middleware и прикрепить его к `dispatcher` приложения.
@@ -518,7 +481,7 @@ $di->setShared('dispatcher', function () use ($di) {
 });
 ```
 
-Свойство `$accessList` позволяет быстро добавлять новые уровни доступа в приложении, например чтобы добавить новый доступ `admin`, достаточно создать класс с условием и добавить его в список `$accessList`:
+Свойство `$accessList` позволяет быстро добавлять новые уровни доступа в приложении, например, чтобы добавить новый доступ `admin`, достаточно создать класс с условием и добавить его в список `$accessList`:
 
 ```php 
 <?php
@@ -561,37 +524,27 @@ $authManager->setAccessList(
 return $authManager;
 ```
 
-## Поставщики (Providers)
+## Поставщики (Providers) и Адаптеры (Adapters) 
 
-Как уже было сказано ранее поставщики определяют какие сущности будут являться пользователями, например `users` или `contacts`, все зависит от контекста вашего приложения, если взять стандартный конфигурационный файл, то можно увидеть, что поставщиками тут являются `users`, можно добавить к ним других поставщиков, например, `customers`:
+Как уже было сказано ранее поставщики определяют какие сущности будут являться пользователями, например `users` или `contacts`, все зависит от контекста вашего приложения.
 
-```php 
-    'auth' => [
-        'defaults' => [
-            'guard' => 'web'
-        ],
+В настоящий момент существуют три вида адаптера:
 
-        'guards' => [
-            'web' => [
-                'driver' => 'session',
-                'provider' => 'users',
-            ],
-        ],
-        'providers' => [
-            'users' => [
-                'adapter' => 'model',
-                'model'  => App\Models\User::class
-            ],
-            'customers' => [
-                'adapter' => 'model',
-                'model'  => App\Models\Customers::class
-            ],
-        ]
-    ],
-```
-## Адаптер поставщика `model`
+- `Sinbadxiii\PhalconAuth\Adapter\Model`
+- `Sinbadxiii\PhalconAuth\Adapter\Stream`
+- `Sinbadxiii\PhalconAuth\Adapter\Memory`
 
-Если в качестве адаптера используется `model` - `App\Models\User::class` вида:
+Модель, файл и массив с данными в приложении.
+Все адаптеры наследуются от абстрактного класса `Sinbadxiii\PhalconAuth\Adapter\AbstractAdapter`, который имеет:
+
+- public <b>setModel</b>(AuthenticatableInterface $model)` - назначить модель поставщика
+- public <b>getModel</b>()` - получить модель поставщика
+- public <b>setConfig</b>(array $config)` - установить конфиг
+- public <b>getConfig</b>()` - получить конфиг адаптера
+
+## Адаптер поставщика `Model`
+
+Для использования адаптера `Model` нам понадобится модель пользователя, например `App\Models\User::class` вида:
 
 ```php 
 <?php
@@ -618,7 +571,7 @@ class User extends Model
 }
 ```
 
-то если сейчас попробовать использовать эту модель, будет выдана ошибка:
+Чтобы при использовании в нашем приложении, не выдавалась ошибка:
 
 `PHP Fatal error:  Uncaught TypeError: Sinbadxiii\PhalconAuth\Adapter\Model::validateCredentials(): Argument #1 ($user) must be of type Sinbadxiii\PhalconAuth\AuthenticatableInterface`.
 
@@ -630,7 +583,6 @@ class User extends Model
 
 namespace App\Models;
 
-use Phalcon\Di\Di;
 use Phalcon\Encryption\Security\Random;
 use Phalcon\Mvc\Model;
 use Sinbadxiii\PhalconAuth\RememberingInterface;
@@ -664,7 +616,7 @@ class User extends Model implements AuthenticatableInterface, RememberingInterfa
 
     public function setPassword(string $password)
     {
-        $this->password = Di::getDefault()->getShared("security")->hash($password);
+        $this->password = $this->getDI()->get("security")->hash($password);
         return $this;
     }
 
@@ -699,8 +651,8 @@ class User extends Model implements AuthenticatableInterface, RememberingInterfa
 
         $rememberToken = new RememberToken();
         $rememberToken->token = $token;
-        $rememberToken->user_agent = Di::getDefault()->get('request')->getUserAgent();
-        $rememberToken->ip = Di::getDefault()->get('request')->getClientAddress();
+        $rememberToken->user_agent = $this->getDI()->get("request")->getUserAgent();
+        $rememberToken->ip =  $this->getDI()->get("request")->getClientAddress();
 
         $this->setRememberToken($rememberToken);
         $this->save();
@@ -724,7 +676,7 @@ interface AuthenticatableInterface
 }
 ```
 
-а реализация `Sinbadxiii\PhalconAuth\RememberingInterface`:
+а реализация "Запомнить меня" - `Sinbadxiii\PhalconAuth\RememberingInterface`:
 
 ```php 
 <?php
@@ -738,33 +690,38 @@ interface RememberingInterface
 }
 ```
 
-## Адаптер поставщика `stream`
-
-Если взять в качестве адаптера поставщиков `users` не `model`, а файл `stream`:
+Теперь можно использовать модель при создании менеджера:
 
 ```php 
-    'auth' => [
-        'defaults' => [
-            'guard' => 'web'
-        ],
+    use Sinbadxiii\PhalconAuth\Adapter\Model;
+    use Sinbadxiii\PhalconAuth\Guard\Session;
+    use Sinbadxiii\PhalconAuth\Manager;
 
-        'guards' => [
-            'web' => [
-                'driver' => 'session',
-                'provider' => 'users',
-            ],
-        ],
-        'providers' => [
-            'users' => [
-                'adapter' => 'stream',
-                'src'  => __DIR__ . "/users.json",
-                'model' => App\Models\UserSimple::class
-            ],
-        ]
-    ],
+    $security = $this->getSecurity();
+
+    $adapter = new Model($security);
+    $adapter->setModel(App\Models\User::class);
+    $guard   = new Session(
+        $adapter,
+        $this->getSession(),
+        $this->getCookies(),
+        $this->getRequest(),
+        $this->getEventsManager()
+    );
+
+
+    $manager = new Manager();
+    $manager->addGuard("web", $guard);
+    
+    $manager->setDefaultGuard($guard);
+
+    return $manager;
 ```
 
-то используя параметр `src` мы можем задать источник файла `users.json`, который имеет вид:
+## Адаптер поставщика `Stream`
+
+Если взять в качестве адаптера поставщиков `users` не `Sinbadxiii\PhalconAuth\Adapter\Model`, а файл `Sinbadxiii\PhalconAuth\Adapter\Stream`:
+то необходимо будет задать источник файла формата `json`, например, `users.json`, который имеет вид:
 
 ```json 
 [
@@ -846,39 +803,36 @@ class UserSimple implements AuthenticatableInterface
 
 ```
 
-но не сможет использовать функцию `RememberMe` (Запомнить меня), т.к.
-не имплементирует интерфейс `Sinbadxiii\PhalconAuth\RememberingInterface` ввиду отсутствия возможности сохранить токен сессии, хотя никто не запрещает это сделать. 
+но следует учитывать, что нельзя будет использовать функцию `RememberMe` (Запомнить меня), т.к. `Stream`
+не имплементирует интерфейс `Sinbadxiii\PhalconAuth\RememberingInterface` ввиду отсутствия возможности сохранить токен сессии в файлом хранилище пользователей (что не мешает вам реализовать эту функцию в своем охраннике на основе хранилища в файле). 
+
+```php 
+    $security = $this->getSecurity();
+
+    $adapter  = new \Sinbadxiii\PhalconAuth\Adapter\Stream($security);
+    $adapter->setModel(App\Models\UserSimple::class);
+    $adapter->setFileSource(__DIR__ . "/users.json");
+
+    $guard = new \Sinbadxiii\PhalconAuth\Guard\Session(
+        $adapter,
+        $this->getSession(),
+        $this->getCookies(),
+        $this->getRequest(),
+        $this->getEventsManager()
+    );
+
+    $manager = new Manager();
+    $manager->addGuard("web", $guard, true); //третий аргумент - назнчаить охранника по дефолту
+
+    return $manager;
+```
+
+- public <b>setFileSource</b>(string $pathSrcFile) - указать путь к файлу
+- public <b>getFileSource</b>() - получить путь к файлу
 
 ## Адаптер поставщика `memory`
 
-Если взять в качестве адаптера поставщиков `memory`:
-
-```php 
-    'auth' => [
-        'defaults' => [
-            'guard' => 'web'
-        ],
-
-        'guards' => [
-            'web' => [
-                'driver' => 'session',
-                'provider' => 'users',
-            ],
-        ],
-        'providers' => [
-            'users' => [
-                'adapter' => 'memory',
-                'model' => App\Models\UserSimple::class,
-                'data'   => [
-                    ["username" =>"admin", "name" => "admin", 'password' => 'admin', "email" => "admin@admin.ru"],
-                    ["username" =>"user", "name" => "user", 'password' => 'user', "email" => "user@user.ru"],
-                ],
-            ],
-        ]
-    ],
-```
-
-то используя параметр `data` мы можем задать массив данных с пользователями, который имеет вид:
+Используя `setData()` можно задать массив данных с пользователями, который имеет вид:
 
 ```php 
 [
@@ -887,11 +841,46 @@ class UserSimple implements AuthenticatableInterface
 ]
 ```
 
+```php 
+$di->setShared("auth", function () {
+
+    $security = $this->getSecurity();
+
+    $data = [
+        ["auth_token" => '1', "name" => "admin", "username" => "admin", 'password' => 'admin', "email" => "admin@admin.ru"],
+        ["auth_token" => '2',  "name" => "admin1", "username" => "admin", 'password' => 'admin1', "email" => "admin1@admin.ru"],
+    ];
+
+    $adapter     = new \Sinbadxiii\PhalconAuth\Adapter\Memory($security);
+    $adapter->setModel(App\Models\UserSimple::class);
+    $adapter->setData($data);
+    
+    $configGuard = [
+        'inputKey'   => 'auth_token',
+        'storageKey' => 'auth_token',
+    ];
+
+    $guard = new \Sinbadxiii\PhalconAuth\Guard\Token(
+        $adapter,
+        $configGuard,
+        $this->getRequest()
+    );
+    
+    $manager = new Manager();
+    $manager->addGuard("api", $guard, true);
+
+    return $manager;
+});
+```
+
+- public <b>setData</b>(array $data) - массив с данными
+- public <b>getData</b>() - получить массив с данными
+
 > Не рекомендуется использовать адаптеры `stream` и `memory` в реальных приложениях из-за их функциональной ограниченности и сложности управления пользователями. Это может быть полезно в прототипах приложений и для ограниченных приложений, которые не хранят пользователей в базах данных.
 
 ## Создание своего адаптера поставщика
 
-Интерфейс адаптера поставщика `Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;` имеет вид:
+Интерфейс адаптера поставщика `Sinbadxiii\PhalconAuth\Adapter\AdapterInterface` имеет вид:
 
 ```php 
 <?php
@@ -906,20 +895,6 @@ interface AdapterInterface
     public function retrieveById($id);
     public function validateCredentials(AuthenticatableInterface $user, array $credentials): bool;
 }
-```
-
-Реализовав все методы интерфейса, вы сможете расширить список адаптеров с помощью метода `addProviderAdapter`, например:
-
-```php 
-$di->setShared("auth", function () {
-    $authManager =  new Phalcon\Auth\Manager();
-
-    $authManager->addProviderAdapter("mongo", function($security, $configProvider) {
-        return new App\Security\Adapter\Mongo($security, $configProvider);
-    });
-
-    return $authManager;
-});
 ```
 
 Так же для создания функционала "Запомнить меня" нужна реализация интерфейса `Sinbadxiii\PhalconAuth\Adapter\AdapterWithRememberTokenInterface`:
@@ -942,7 +917,145 @@ interface AdapterWithRememberTokenInterface
 }
 ```
 
+## Manager Factory
+
+`Sinbadxiii\PhalconAuth\MangerFactory` - это создание менеджера аутентификации с минимальными усилиями, если вы не хотите настраивать вручную менеджер аутентификации, а хотите быстро запустить сервис провайдер аутентификации, вы можете сделать это так:
+```php
+$di->setShared('auth', function () { 
+   
+    $manager = new \Sinbadxiii\PhalconAuth\ManagerFactory();
+    
+    return $manager;
+});
+```
+
+Все, дальше `ManagerFactory` сделает все за вас, на основе вашего конфигурационного файла. По умолчанию используется конфигурация из `$this->config->auth`, если вы хотите использовать другую конфигурацию, отличную от `$this->config->auth` то можно передать в качестве первого аргумента другой конфиг:
+
+```php
+$di->setShared("auth", function () {
+    $config = $this->getConfig()->auth_config_other;
+
+    $manager = new \Sinbadxiii\PhalconAuth\ManagerFactory($config->toArray());
+
+    return $manager;
+});
+```
+### Пример конфигурационного файла для использования Сессий
+
+Итак, типичный пример конфигурационного файла приложения на основе Сессий. Файл может находится в папке конфигов `config/auth.php` или в глобальном файле `config.php` с доступом по ключу `auth` (`$this->config->auth`).
+
+```php
+<?php
+[
+    'auth' => [
+        'defaults' => [ //дефолтные значения
+            'guard' => 'web'  //дефолтный охранник
+        ],
+        'guards' => [   //список охранников
+            'web' => [          
+                'driver' => 'session',   //драйвер сессия
+                'provider' => 'users',   //поставщики users
+            ],
+        ],
+        'providers' => [
+            'users' => [
+                'adapter' => 'model',  //адаптер поставщика users - model
+                'model'  => App\Models\User::class,   //модель
+            ]
+        ]
+    ],
+];
+```
+
+Т.е. приложение будет использовать `guard = web`. В свою очередь Охранник web основан на драйвере `session` и использует поставщика пользователей `users`, которые извлекаются через Адаптера `model` - `App\Models\Users`.
+Данный конфигурационный файл позволяет создавать различные комбинации охранников и поставщиков, разделяя доступы в вашем приложений.
+
+### Пример конфигурационного файла для использования Токена
+
+```php
+<?php
+[
+    'auth' => [
+        'defaults' => [
+            'guard' => 'api'
+        ],
+        'guards' => [
+            'api' => [
+                'driver' => 'token',
+                'provider' => 'users',
+                'inputKey' => 'auth_token', //опционально, по дефолту auth_token
+                'storageKey' => 'auth_token', //опционально, по дефолту auth_token
+            ],
+        ],
+        'providers' => [
+            'users' => [
+                'adapter' => 'model',
+                'model'  => App\Models\User::class,
+            ]
+        ]
+    ],
+];
+```
+
+Расширить охранников можно с помощью `extendGuard` и передать в качестве аргумента имя охранника, используемого в конфиге  `jwt`, а так же `Closure` с передачей аргументов в новый класс охранника, например:
+
+```php
+$di->setShared('auth', function () {
+    $auth = new \Sinbadxiii\PhalconAuth\ManagerFactory();    
+    
+    $request = $this->getRequest();
+
+    $manager->extendGuard("jwt", function ($adapter, $config) use ($request) {
+        return new JwtGuard($adapter, $config, $request);
+    });
+    
+    return $auth;
+});
+```
+
+Вы можете расширить список адаптеров с помощью метода `extendProviderAdapter`, например:
+
+```php 
+$di->setShared("auth", function () {
+    $authManager =  new Phalcon\Auth\ManagerFactory();
+
+    $authManager->extendProviderAdapter("mongo", function($security, $configProvider) {
+        return new App\Security\Adapter\Mongo($security, $configProvider);
+    });
+
+    return $authManager;
+});
+```
+
+
 ## Методы
+
+### Задать требуемый доступ к контроллеру
+
+Метод `access()` позволит задать требуемый доступ к контроллеру, из коробки `auth` - для аутентифицированных, `guest` - для гостей. 
+
+```php
+$this->auth->access("auth") 
+```
+```php 
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+class ProfileController extends ControllerBase
+{
+    public function onConstruct()
+    {
+        $this->auth->access("auth");
+    }
+
+    public function indexAction()
+    {
+    }
+}
+```
 
 ### Проверка аутентификации текущего пользователя
 

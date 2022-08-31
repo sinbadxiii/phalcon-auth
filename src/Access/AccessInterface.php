@@ -9,9 +9,9 @@ namespace Sinbadxiii\PhalconAuth\Access;
  */
 interface AccessInterface
 {
-    public function except(...$actions): void;
+    public function setExceptActions(...$actions): void;
     public function getExceptActions(): array;
-    public function only(...$actions): void;
+    public function setOnlyActions(...$actions): void;
     public function getOnlyActions(): array;
     public function isAllowed(string $actionName): bool;
     public function redirectTo();

@@ -28,7 +28,7 @@ class Authenticate extends Injectable implements AuthenticatesRequestInterface
     public function __construct()
     {
         if (!empty($this->accessList)) {
-            $this->auth->addAccessList($this->accessList);
+            $this->getDI()->get("auth")->addAccessList($this->accessList);
         }
     }
 
@@ -49,7 +49,7 @@ class Authenticate extends Injectable implements AuthenticatesRequestInterface
      */
     protected function authenticate()
     {
-        if ($access = $this->auth->getAccess()) {
+        if ($access = $this->getDI()->get("auth")->getAccess()) {
 
             if ($access->isAllowed($this->actionName)) {
                 return true;

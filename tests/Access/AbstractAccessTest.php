@@ -30,7 +30,7 @@ class AbstractAccessTest extends AbstractTestCase
     public function exceptAbstractAccess(): void
     {
         $abstractAccessMock = $this->getMockForAbstractClass(AbstractAccess::class);
-        $abstractAccessMock->except("action", "action2", "action3");
+        $abstractAccessMock->setExceptActions("action", "action2", "action3");
 
         $this->assertEquals(["action", "action2", "action3"], $abstractAccessMock->getExceptActions());
     }
@@ -41,7 +41,7 @@ class AbstractAccessTest extends AbstractTestCase
     public function onlyAbstractAccess(): void
     {
         $abstractAccessMock = $this->getMockForAbstractClass(AbstractAccess::class);
-        $abstractAccessMock->only("action", "action2", "action3");
+        $abstractAccessMock->setOnlyActions("action", "action2", "action3");
 
         $this->assertEquals(["action", "action2", "action3"], $abstractAccessMock->getOnlyActions());
     }
@@ -52,7 +52,6 @@ class AbstractAccessTest extends AbstractTestCase
     public function isAllowedMethodAbstractAccessByDefaultFalse(): void
     {
         $abstractAccessMock = $this->getMockForAbstractClass(AbstractAccess::class);
-
         $isAllowed = $abstractAccessMock->isAllowed("action");
 
         $this->assertFalse($isAllowed);
@@ -64,7 +63,7 @@ class AbstractAccessTest extends AbstractTestCase
     public function isAllowedMethodAbstractAccessWithExceptAction(): void
     {
         $abstractAccessMock = $this->getMockForAbstractClass(AbstractAccess::class);
-        $abstractAccessMock->except("action");
+        $abstractAccessMock->setExceptActions("action");
         $isAllowed = $abstractAccessMock->isAllowed("action");
 
         $this->assertTrue($isAllowed);
@@ -76,7 +75,7 @@ class AbstractAccessTest extends AbstractTestCase
     public function isAllowedMethodAbstractAccessWithOnlyAction(): void
     {
         $abstractAccessMock = $this->getMockForAbstractClass(AbstractAccess::class);
-        $abstractAccessMock->only("action");
+        $abstractAccessMock->setOnlyActions("action");
         $isAllowed = $abstractAccessMock->isAllowed("action");
 
         $this->assertFalse($isAllowed);

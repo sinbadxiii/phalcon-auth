@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Adapter;
 
+use InvalidArgumentException;
 use Phalcon\Di\Di;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberingInterface;
@@ -20,12 +21,16 @@ class Model extends AbstractAdapter implements AdapterWithRememberTokenInterface
      */
     protected function getProviderStorage(): mixed
     {
-        return $this->config->model;
+        if ($this->model === null) {
+            throw new InvalidArgumentException("Model is not defined");
+        }
+
+        return $this->model;
     }
 
     /**
      * @param array $credentials
-     * @return mixed
+     * @return AuthenticatableInterface|null
      */
     public function retrieveByCredentials(array $credentials): ?AuthenticatableInterface
     {
@@ -57,7 +62,7 @@ class Model extends AbstractAdapter implements AdapterWithRememberTokenInterface
      * @param $identifier
      * @param $token
      * @param $user_agent
-     * @return void|null
+     * @return AuthenticatableInterface|null
      */
     public function retrieveByToken($identifier, $token, $user_agent): ?AuthenticatableInterface
     {

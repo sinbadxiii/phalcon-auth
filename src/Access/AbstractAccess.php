@@ -33,7 +33,7 @@ abstract class AbstractAccess extends Injectable implements AccessInterface
      * @param ...$actions
      * @return void
      */
-    public function except(...$actions): void
+    public function setExceptActions(...$actions): void
     {
         $this->exceptActions = $actions;
     }
@@ -50,7 +50,7 @@ abstract class AbstractAccess extends Injectable implements AccessInterface
      * @param ...$actions
      * @return void
      */
-    public function only(...$actions): void
+    public function setOnlyActions(...$actions): void
     {
         $this->onlyActions = $actions;
     }

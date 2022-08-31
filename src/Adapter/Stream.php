@@ -11,15 +11,38 @@ use Exception;
  * Class Stream
  * @package Sinbadxiii\PhalconAuth\Adapter
  */
-class Stream extends AbstractAdapter
+class Stream extends Memory
 {
     /**
-     * @return mixed
-     * @throws \Exception
+     * @var string
      */
-    protected function getProviderStorage(): mixed
+    protected string $srcFile;
+
+    /**
+     * @return array|mixed
+     * @throws Exception
+     */
+    public function getData()
     {
-        return $this->read($this->config->src);
+        if ($this->config && !isset($this->config["src"])) {
+            throw new InvalidArgumentException(
+                "Сonfig key 'src' with user data array empty or does not exist"
+            );
+        }
+
+        if (!empty($this->config["src"])) {
+            $this->srcFile = $this->config["src"];
+        }
+
+        if (empty($this->srcFile)) {
+            throw new InvalidArgumentException(
+                "File source is empty"
+            );
+        }
+
+        $this->data = $this->read($this->srcFile);
+
+        return $this->data;
     }
 
     /**
@@ -55,5 +78,22 @@ class Stream extends AbstractAdapter
         }
 
         return $decoded;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFileSource(): string
+    {
+        return $this->srcFile;
+    }
+
+    /**
+     * @param string $src
+     * @return void
+     */
+    public function setFileSource(string $src)
+    {
+        $this->srcFile = $src;
     }
 }

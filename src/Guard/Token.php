@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Guard;
 
-use Phalcon\Config\ConfigInterface;
 use Phalcon\Di\Di;
+use Phalcon\Http\Request;
 use Phalcon\Support\Helper\Str\StartsWith;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
@@ -19,16 +19,6 @@ use function is_null;
 class Token implements GuardInterface
 {
     use GuardHelper;
-
-    /**
-     * @var string
-     */
-    protected string $nameGuard;
-
-    /**
-     * @var mixed
-     */
-    protected $eventsManager;
 
     /**
      * @var mixed
@@ -55,19 +45,15 @@ class Token implements GuardInterface
     protected $adapter;
 
     /**
-     * @param $name
-     * @param $provider
-     * @param $inputKey
-     * @param $storageKey
+     * @param AdapterInterface $adapter
+     * @param array $config
      */
-    public function __construct(AdapterInterface $adapter, ConfigInterface $config, string $nameGuard)
+    public function __construct(AdapterInterface $adapter, array $config, Request $request)
     {
-        $this->nameGuard     = $nameGuard;
         $this->adapter       = $adapter;
-        $this->eventsManager = Di::getDefault()->getShared("eventsManager");
-        $this->request       = Di::getDefault()->getShared("request");
-        $this->inputKey      = $config->inputKey ?? "auth_token";
-        $this->storageKey    = $config->storageKey ?? "auth_token";
+        $this->request       = $request;
+        $this->inputKey      = $config['inputKey'];
+        $this->storageKey    = $config['storageKey'];
     }
 
     /**
@@ -136,5 +122,35 @@ class Token implements GuardInterface
         if ($object($header, 'Bearer ')) {
             return mb_substr($header, 7, null, 'UTF-8');
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return $this
+     */
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
+
+        return $this;
+    }
+
+    /**
+     * @return AdapterInterface
+     */
+    public function getAdapter(): AdapterInterface
+    {
+        return $this->adapter;
+    }
+
+    /**
+     * @param AdapterInterface $adapter
+     * @return $this
+     */
+    public function setAdapter(AdapterInterface $adapter): static
+    {
+        $this->adapter = $adapter;
+
+        return $this;
     }
 }

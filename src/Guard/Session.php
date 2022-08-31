@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Guard;
 
-use Phalcon\Config\ConfigInterface;
+use Phalcon\Events\AbstractEventsAware;
+use Phalcon\Events\EventsAwareInterface;
+use Phalcon\Http\Response\Cookies;
 use Phalcon\Http\Request;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterWithRememberTokenInterface;
 use InvalidArgumentException;
-use Phalcon\Di\Di;
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
+use Phalcon\Session\ManagerInterface as SessionManagerInterface;
+use Phalcon\Events\ManagerInterface as EventsManagerInterface;;
 
 use function is_null;
 
@@ -19,15 +22,11 @@ use function is_null;
  * Class Session
  * @package Sinbadxiii\PhalconAuth\Guard
  */
-class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterface
+class Session extends AbstractEventsAware implements
+    GuardInterface, GuardStatefulInterface, BasicAuthInterface, EventsAwareInterface
 {
     use GuardHelper;
     use BasicHelper;
-
-    /**
-     * @var
-     */
-    protected $nameGuard;
 
     /**
      * @var mixed
@@ -40,17 +39,17 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
     protected $cookies;
 
     /**
-     * @var mixed
-     */
-    protected $eventsManager;
-
-    /**
      * @var \Phalcon\Http\Request
      */
     protected $request;
 
     /**
-     * @var
+     * @var EventsManagerInterface
+     */
+    protected $eventsManager;
+
+    /**
+     * @var null|AuthenticatableInterface
      */
     protected $lastUserAttempted;
 
@@ -66,14 +65,15 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     protected $adapter;
 
-    public function __construct(AdapterInterface $adapter, ConfigInterface $configGuard, string $nameGuard)
+    public function __construct(
+        AdapterInterface $adapter, SessionManagerInterface $session,
+        Cookies $cookies, Request $request, EventsManagerInterface $eventsManager)
     {
-        $this->nameGuard     = $nameGuard;
         $this->adapter       = $adapter;
-        $this->session       = Di::getDefault()->getShared("session");
-        $this->cookies       = Di::getDefault()->getShared("cookies");
-        $this->eventsManager = Di::getDefault()->getShared("eventsManager");
-        $this->request       = $this->getRequest();
+        $this->session       = $session;
+        $this->cookies       = $cookies;
+        $this->request       = $request;
+        $this->eventsManager = $eventsManager;
     }
 
     /**
@@ -180,7 +180,8 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     public function getName(): string
     {
-        return "auth_{$this->nameGuard}_" . sha1(static::class);
+
+        return "auth-" . sha1(static::class . $this->adapter::class);
     }
 
     /**
@@ -188,7 +189,7 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
      */
     public function getRememberName(): string
     {
-        return "remember_{$this->nameGuard}_" . sha1(static::class);
+        return "remember_" . sha1(static::class . $this->adapter::class);
     }
 
     /**
@@ -352,20 +353,53 @@ class Session implements GuardInterface, GuardStatefulInterface, BasicAuthInterf
     }
 
     /**
-     * @return Request
-     */
-    public function getRequest(): Request
-    {
-        return $this->request ?: Di::getDefault()->getShared("request");
-    }
-
-    /**
      * @param Request $request
      * @return $this
      */
     public function setRequest(Request $request)
     {
         $this->request = $request;
+
+        return $this;
+    }
+
+    /**
+     * @param SessionManagerInterface $session
+     * @return $this
+     */
+    public function setSession(SessionManagerInterface $session)
+    {
+        $this->session = $session;
+
+        return $this;
+    }
+
+    /**
+     * @param Cookies $cookies
+     * @return $this
+     */
+    public function setCookies(Cookies $cookies)
+    {
+        $this->cookies = $cookies;
+
+        return $this;
+    }
+
+    /**
+     * @return AdapterInterface
+     */
+    public function getAdapter(): AdapterInterface
+    {
+        return $this->adapter;
+    }
+
+    /**
+     * @param AdapterInterface $adapter
+     * @return $this
+     */
+    public function setAdapter(AdapterInterface $adapter): static
+    {
+        $this->adapter = $adapter;
 
         return $this;
     }

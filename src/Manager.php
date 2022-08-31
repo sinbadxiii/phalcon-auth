@@ -4,17 +4,9 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth;
 
-use Closure;
 use InvalidArgumentException;
-use Phalcon\Encryption\Security;
 use Sinbadxiii\PhalconAuth\Access\AccessInterface;
-use Phalcon\Di\Di;
-use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
-use Phalcon\Config\ConfigInterface;
 use Sinbadxiii\PhalconAuth\Guard\GuardInterface;
-
-use function is_null;
-use function call_user_func;
 
 /**
  * Class Manager
@@ -23,26 +15,6 @@ use function call_user_func;
 class Manager implements ManagerInterface
 {
     /**
-     * @var ConfigInterface
-     */
-    protected ConfigInterface $config;
-
-    /**
-     * @var Security
-     */
-    protected Security $security;
-
-    /**
-     * @var array
-     */
-    protected array $customGuards = [];
-
-    /**
-     * @var array
-     */
-    protected array $customAdapters = [];
-
-    /**
      * @var array
      */
     protected array $guards = [];
@@ -50,7 +22,7 @@ class Manager implements ManagerInterface
     /**
      * @var AccessInterface|null
      */
-    protected ?AccessInterface $access = null;
+    protected ?AccessInterface $activeAccess = null;
 
     /**
      * @var array
@@ -58,155 +30,65 @@ class Manager implements ManagerInterface
     protected array $accessList = [];
 
     /**
-     * @param ConfigInterface|null $config
-     * @param Security|null $security
+     * @var GuardInterface
      */
-    public function __construct(ConfigInterface $config = null, Security $security = null)
-    {
-        $this->config = $config ?? Di::getDefault()->getShared("config")->auth;
-
-        if ($this->config === null) {
-            throw new InvalidArgumentException(
-                "Configuration file auth.php (or key config->auth into your config) does not exist"
-            );
-        }
-
-        $this->security = $security ?? Di::getDefault()->getShared("security");
-    }
+    protected $defaultGuard;
 
     /**
-     * @param string $name
-     * @return ConfigInterface|null
+     * @var GuardInterface
      */
-    protected function getConfigGuard(string $name): ?ConfigInterface
-    {
-        return $this->config->guards->{$name};
-    }
+    protected $guard;
 
     /**
      * @param string|null $name
      * @return GuardInterface
+     * @throws \Exception
      */
     public function guard(?string $name = null): GuardInterface
     {
-        $name = $name ?: $this->getDefaultDriver();
+        if ($name === null) {
+            return $this->defaultGuard;
+        }
 
-        return $this->guards[$name] ?? $this->guards[$name] = $this->resolve($name);
+        if (!isset($this->guards[$name])) {
+            throw new \Exception("Guard [{$name}] is not defined.");
+        }
+
+        return $this->guards[$name];
     }
 
     /**
-     * @param $name
-     * @return mixed
+     * @return GuardInterface
      */
-    protected function resolve(string $nameGuard)
+    public function getDefaultGuard(): GuardInterface
     {
-        $configGuard = $this->getConfigGuard($nameGuard);
-
-        if (is_null($configGuard)) {
-            throw new InvalidArgumentException("Auth guard [{$nameGuard}] is not defined.");
-        }
-
-        $providerAdapter = $this->getAdapterProvider($configGuard->provider);
-
-        if (isset($this->customGuards[$configGuard->driver])) {
-            return call_user_func(
-                $this->customGuards[$configGuard->driver],
-                $providerAdapter,
-                $configGuard,
-                $nameGuard
-            );
-        }
-
-        $guardDriver = sprintf("\\%s\\Guard\\%s",
-            __NAMESPACE__,
-            ucfirst($configGuard->driver)
-        );
-
-        if (!class_exists($guardDriver)) {
-            throw new InvalidArgumentException(
-                "Auth driver [{$configGuard->driver}] for guard [{$nameGuard}] is not defined."
-            );
-        }
-
-        return new $guardDriver($providerAdapter, $configGuard, $nameGuard);
+        return $this->defaultGuard;
     }
 
     /**
-     * @param string|null $provider
-     * @return mixed|AdapterInterface|void
-     */
-    public function getAdapterProvider(string $provider = null)
-    {
-        $configProvider = $this->config->providers->{$provider};
-
-        if ($configProvider === null) {
-            return;
-        }
-
-        $adapterName = $configProvider->adapter;
-
-        if ($adapterName === null) {
-            throw new InvalidArgumentException(
-                "Adapter not assigned in config->auth->providers->" . $provider . "->adapter = ?"
-            );
-        }
-
-        if (isset($this->customAdapters[$adapterName])) {
-            return call_user_func(
-                $this->customAdapters[$adapterName],
-                $this->security,
-                $configProvider
-            );
-        }
-
-        $adapterClass = sprintf("\\Sinbadxiii\\PhalconAuth\\Adapter\\%s",
-            ucfirst($adapterName)
-        );
-
-        if (!class_exists($adapterClass)) {
-            throw new \InvalidArgumentException($adapterClass . " not found");
-        }
-
-        $adapter = new $adapterClass(
-            $this->security,
-            $configProvider
-        );
-
-        if (!($adapter instanceof AdapterInterface)) {
-            throw new \InvalidArgumentException($adapterClass . " not implementing AdapterInterface");
-        }
-
-        return $adapter;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDefaultDriver(): string
-    {
-        return $this->config->defaults->guard;
-    }
-
-    /**
-     * @param $driver
-     * @param Closure $callback
+     * @param GuardInterface $guard
      * @return $this
      */
-    public function addGuard($driver, Closure $callback): ManagerInterface
+    public function setDefaultGuard(GuardInterface $guard): static
     {
-        $this->customGuards[$driver] = $callback;
+        $this->defaultGuard = $guard;
 
         return $this;
     }
 
     /**
-     * @param $name
-     * @param Closure $callback
+     * @param string $nameGuard
+     * @param GuardInterface $guard
+     * @param bool $isDefault
      * @return $this
      */
-    public function addProviderAdapter($name, Closure $callback): static
+    public function addGuard(string $nameGuard, GuardInterface $guard, bool $isDefault = false): static
     {
-        $this->customAdapters[$name] = $callback;
+        $this->guards[$nameGuard] = $guard;
+
+        if ($isDefault === true) {
+            $this->defaultGuard = $guard;
+        }
 
         return $this;
     }
@@ -216,7 +98,7 @@ class Manager implements ManagerInterface
      */
     public function getAccess(): ?AccessInterface
     {
-        return $this->access;
+        return $this->activeAccess;
     }
 
     /**
@@ -225,7 +107,7 @@ class Manager implements ManagerInterface
      */
     public function setAccess(AccessInterface $access): static
     {
-        $this->access = $access;
+        $this->activeAccess = $access;
 
         return $this;
     }
@@ -254,9 +136,9 @@ class Manager implements ManagerInterface
 
     /**
      * @param string $accessName
-     * @return AccessInterface|null
+     * @return ManagerInterface|null
      */
-    public function access(string $accessName): ?AccessInterface
+    public function access(string $accessName): ?ManagerInterface
     {
         if (!isset($this->accessList[$accessName]) || !class_exists($this->accessList[$accessName])) {
             throw new InvalidArgumentException(
@@ -264,9 +146,31 @@ class Manager implements ManagerInterface
             );
         }
 
-        $this->access = new $this->accessList[$accessName];
+        $this->activeAccess = new $this->accessList[$accessName];
 
-        return $this->access;
+        return $this;
+    }
+
+    /**
+     * @param ...$actions
+     * @return $this
+     */
+    public function except(...$actions): static
+    {
+        $this->activeAccess->setExceptActions(...$actions);
+
+        return $this;
+    }
+
+    /**
+     * @param ...$actions
+     * @return $this
+     */
+    public function only(...$actions): static
+    {
+        $this->activeAccess->setOnlyActions(...$actions);
+
+        return $this;
     }
 
     /**
