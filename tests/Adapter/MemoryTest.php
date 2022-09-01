@@ -16,9 +16,6 @@ use Sinbadxiii\PhalconAuth\Tests\User\UserModelFake;
  */
 class MemoryTest extends AbstractTestCase
 {
-    protected $security;
-    protected $config;
-
     /** @test */
     public function implementFromAdapterInterface(): void
     {

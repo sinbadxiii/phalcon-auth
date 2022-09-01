@@ -69,7 +69,7 @@ Phalcon Auth позволит вам создать систему аутент�
 
 ## Manager
 
-Если вы следуете философии фреймворка Phalcon и хотите вручную настроить все компоненты аутентификации, то вам понадобится класс `Sinbadxiii\PhalconAuth\Manager` - с помощью данного менджера можно настроить охранника, адаптер поставщиков и распределить доступы пользователям.  
+Если вы строго придерживаетесь философии фреймворка Phalcon и хотите вручную настроить все компоненты аутентификации, то вам понадобится класс `Sinbadxiii\PhalconAuth\Manager` - с помощью данного менеджера можно настроить охранника, адаптер поставщиков и распределить доступы пользователям.  
 
 ```php
 use Sinbadxiii\PhalconAuth\Manager;
@@ -99,7 +99,7 @@ return $auth;
 
 В результате получился менеджер, который будет искать пользователей через модель `User` в таблице базе данных `users`.
 Результат аутентификации будет храниться в сессии, и куках, если выбрать "Запомнить меня".
-В качестве других аргументов нужно передать сервис провайдеры `$this->security`, `$this->session`, `$this->cookies`, `$this->request`, `$this->eventsManager`, которые будут необходимы при дальнейшем использовании охранников и адаптеров поставщиков.
+В качестве других аргументов нужно передать сервис провайдеры `$this->security`, `$this->session`, `$this->cookies`, `$this->request`, `$this->eventsManager`, которые будут необходимы при дальнейшем использовании охранника и адаптера поставщиков.
 
 - public <b>addGuard</b>(string $nameGuard, GuardInterface $guard, bool $isDefault = false) - добавить охранника
 - public <b>guard</b>(?string $name = null) - получить конкретного охранника или по заданного по дефолту 
@@ -160,7 +160,6 @@ $auth->addGuard("api", $guard, true);
 
 return $auth;
 ```
-
 Соответствено GET запрос должен будет иметь вид: 
 
 ```shell
@@ -358,9 +357,7 @@ namespace Sinbadxiii\PhalconAuth\Access;
 interface AccessInterface
 {
     public function setExceptActions(...$actions): void;
-    public function getExceptActions(): array;
     public function setOnlyActions(...$actions): void;
-    public function getOnlyActions(): array;
     public function isAllowed(): bool;
     public function redirectTo();
     public function allowedIf(): bool;
@@ -662,6 +659,76 @@ class User extends Model implements AuthenticatableInterface, RememberingInterfa
 }
 ```
 
+Модель `App\Models\RememberToken` будет иметь вид:
+
+```php 
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Phalcon\Mvc\Model;
+use Sinbadxiii\PhalconAuth\RememberTokenInterface;
+
+class RememberToken extends Model implements  RememberTokenInterface
+{
+    /**
+     * @var integer
+     */
+    public $id;
+
+    /**
+     * @var integer
+     */
+    public $user_id;
+
+    /**
+     * @var string
+     */
+    public $token;
+
+    /**
+     * @var string
+     */
+    public $ip;
+
+    /**
+     * @var string
+     */
+    public $user_agent;
+
+    /**
+     * @var integer
+     */
+    public $created_at;
+
+    /**
+     * @var integer
+     */
+    public $updated_at;
+
+    /**
+     * @var integer
+     */
+    public $expired_at;
+
+    public function initialize()
+    {
+        $this->setSource("users_remember_tokens");
+    }
+
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    public function getUserAgent(): string
+    {
+        return $this->user_agent;
+    }
+}
+```
 Интерфейс `Sinbadxiii\PhalconAuth\AuthenticatableInterface` имеет следущий вид:
 
 ```php 

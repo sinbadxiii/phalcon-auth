@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Sinbadxiii\PhalconAuth\Guard;
 
-use Phalcon\Di\Di;
 use Phalcon\Http\Request;
 use Phalcon\Support\Helper\Str\StartsWith;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 
 use function is_null;
+use function var_dump;
 
 /**
  * Class Token
@@ -105,6 +105,10 @@ class Token implements GuardInterface
         $token = $this->request->get($this->inputKey);
 
         if (empty($token)) {
+            $token = $this->request->getPost($this->inputKey);;
+        }
+
+        if (empty($token)) {
             $token = $this->bearerToken();
         }
 
@@ -133,6 +137,14 @@ class Token implements GuardInterface
         $this->request = $request;
 
         return $this;
+    }
+
+    /**
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
     }
 
     /**

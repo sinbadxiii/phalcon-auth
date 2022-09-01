@@ -25,11 +25,6 @@ abstract class AbstractAccess extends Injectable implements AccessInterface
     protected array $onlyActions   = [];
 
     /**
-     * @return bool
-     */
-    abstract public function allowedIf(): bool;
-
-    /**
      * @param ...$actions
      * @return void
      */

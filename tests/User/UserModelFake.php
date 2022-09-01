@@ -12,7 +12,7 @@ use Sinbadxiii\PhalconAuth\RememberTokenInterface;
  */
 class UserModelFake implements AuthenticatableInterface, RememberingInterface
 {
-    public int $id;
+    public mixed $id;
     public string $password;
     public RememberTokenInterface $remember_token;
 
@@ -23,7 +23,7 @@ class UserModelFake implements AuthenticatableInterface, RememberingInterface
         }
     }
 
-    public function getAuthIdentifier(): int
+    public function getAuthIdentifier(): mixed
     {
         return $this->id;
     }

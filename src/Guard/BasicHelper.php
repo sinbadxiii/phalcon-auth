@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sinbadxiii\PhalconAuth\Guard;
 
 use Phalcon\Http\Request;
+use function var_dump;
 
 /**
  * Trait BasicHelper
@@ -23,7 +24,7 @@ trait BasicHelper
             return true;
         }
 
-        if ($this->attemptBasic($this->getRequest(), $field, $extraConditions)) {
+        if ($this->attemptBasic($this->request, $field, $extraConditions)) {
             return true;
         }
 
@@ -67,7 +68,7 @@ trait BasicHelper
      */
     public function onceBasic(string $field = 'email', array $extraConditions = []): mixed
     {
-        $credentials = $this->basicCredentials($this->getRequest(), $field);
+        $credentials = $this->basicCredentials($this->request, $field);
 
         if ($this->once(array_merge($credentials, $extraConditions))) {
             return $this->getUser();

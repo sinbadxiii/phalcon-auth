@@ -35,11 +35,6 @@ class Manager implements ManagerInterface
     protected $defaultGuard;
 
     /**
-     * @var GuardInterface
-     */
-    protected $guard;
-
-    /**
      * @param string|null $name
      * @return GuardInterface
      * @throws \Exception
@@ -51,7 +46,7 @@ class Manager implements ManagerInterface
         }
 
         if (!isset($this->guards[$name])) {
-            throw new \Exception("Guard [{$name}] is not defined.");
+            throw new InvalidArgumentException("Auth guard [{$name}] is not defined.");
         }
 
         return $this->guards[$name];

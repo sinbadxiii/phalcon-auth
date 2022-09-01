@@ -6,8 +6,10 @@ namespace Sinbadxiii\PhalconAuth\Adapter;
 
 use InvalidArgumentException;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
+
 use function array_column;
 use function array_search;
+use function var_dump;
 
 /**
  * Class Memory
@@ -43,7 +45,13 @@ class Memory extends AbstractAdapter
 
         $userModel = $this->model;
 
-        return ($userData = $this->getProviderStorage()[$identifier]) ? new $userModel($userData) : null;
+        $userData = null;
+
+        if (isset($this->getProviderStorage()[$identifier])) {
+            $userData = $this->getProviderStorage()[$identifier];
+        }
+
+        return ($userData) ? new $userModel($userData) : null;
     }
 
     /**
@@ -88,13 +96,7 @@ class Memory extends AbstractAdapter
      */
     protected function getProviderStorage(): mixed
     {
-        if (empty($this->getData())) {
-            throw new InvalidArgumentException(
-                "Data is empty"
-            );
-        }
-
-        return $this->data;
+        return $this->getData();
     }
 
     /**
@@ -112,6 +114,12 @@ class Memory extends AbstractAdapter
             $this->data = $this->config["data"];
         }
 
+        if (empty($this->data)) {
+            throw new InvalidArgumentException(
+                "Data is empty"
+            );
+        }
+
         return $this->data;
     }
 
@@ -119,7 +127,7 @@ class Memory extends AbstractAdapter
      * @param $data
      * @return void
      */
-    public function setData($data)
+    public function setData(array $data): void
     {
         $this->data = $data;
     }

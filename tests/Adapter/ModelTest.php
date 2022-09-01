@@ -16,9 +16,6 @@ use Sinbadxiii\PhalconAuth\Tests\User\UserModelFake;
  */
 class ModelTest extends AbstractTestCase
 {
-    protected $security;
-    protected $config;
-
     /** @test */
     public function implementFromAdapterInterface(): void
     {

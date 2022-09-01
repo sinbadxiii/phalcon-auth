@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sinbadxiii\PhalconAuth\Guard;
 
 use Phalcon\Events\AbstractEventsAware;
-use Phalcon\Events\EventsAwareInterface;
 use Phalcon\Http\Response\Cookies;
 use Phalcon\Http\Request;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
@@ -14,16 +13,17 @@ use Sinbadxiii\PhalconAuth\Adapter\AdapterWithRememberTokenInterface;
 use InvalidArgumentException;
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 use Phalcon\Session\ManagerInterface as SessionManagerInterface;
-use Phalcon\Events\ManagerInterface as EventsManagerInterface;;
+use Phalcon\Events\ManagerInterface as EventsManagerInterface;
 
 use function is_null;
+use function var_dump;
 
 /**
  * Class Session
  * @package Sinbadxiii\PhalconAuth\Guard
  */
 class Session extends AbstractEventsAware implements
-    GuardInterface, GuardStatefulInterface, BasicAuthInterface, EventsAwareInterface
+    GuardInterface, GuardStatefulInterface, BasicAuthInterface
 {
     use GuardHelper;
     use BasicHelper;
@@ -146,7 +146,7 @@ class Session extends AbstractEventsAware implements
      * @param $recaller
      * @return mixed
      */
-    protected function userFromRecaller($recaller)
+    protected function userFromRecaller($recaller): ?AuthenticatableInterface
     {
         $this->viaRemember = ! is_null($user = $this->adapter->retrieveByToken(
             $recaller->id(), $recaller->token(), $recaller->userAgent()
@@ -180,7 +180,6 @@ class Session extends AbstractEventsAware implements
      */
     public function getName(): string
     {
-
         return "auth-" . sha1(static::class . $this->adapter::class);
     }
 
@@ -205,7 +204,6 @@ class Session extends AbstractEventsAware implements
         $this->updateSession($user->getAuthIdentifier());
 
         if ($remember) {
-
             if (!$this->adapter instanceof AdapterWithRememberTokenInterface) {
                 throw new InvalidArgumentException(
                     "Adapter " . $this->adapter::class . " not instanceof AdapterWithRememberTokenInterface"

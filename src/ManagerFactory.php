@@ -17,7 +17,6 @@ use Sinbadxiii\PhalconAuth\Guard\GuardInterface;
 use Sinbadxiii\PhalconAuth\Guard\Session;
 use Sinbadxiii\PhalconAuth\Guard\Token;
 use Phalcon\Events\EventsAwareInterface;
-use Sinbadxiii\PhalconAuth\ManagerInterface;
 
 use function class_exists;
 use function is_null;
@@ -73,15 +72,16 @@ class ManagerFactory extends Manager implements EventsAwareInterface
         $this->config = $config;
 
         if (empty($this->config)) {
-            if (!empty($authConfig = Di::getDefault()->getShared("config")->auth)) {
+            if ($authConfig = Di::getDefault()->getShared("config")->auth) {
+
+                if (empty($authConfig)) {
+                    throw new InvalidArgumentException(
+                        "Configuration file auth.php (or key config->auth into your config) does not exist"
+                    );
+                }
+
                 $this->config = $authConfig->toArray();
             }
-        }
-
-        if (empty($this->config)) {
-            throw new InvalidArgumentException(
-                "Configuration file auth.php (or key config->auth into your config) does not exist"
-            );
         }
 
         $this->security = $security ?? Di::getDefault()->getShared("security");

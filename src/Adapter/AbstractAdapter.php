@@ -36,8 +36,8 @@ abstract class AbstractAdapter implements AdapterInterface
         $this->hasher = $hasher;
         $this->config = $config;
 
-        if (!empty($config['model'])) {
-            $this->model = $config['model'];
+        if (!empty($this->config['model'])) {
+            $this->model = $this->config['model'];
         }
     }
 
@@ -75,6 +75,10 @@ abstract class AbstractAdapter implements AdapterInterface
     public function setConfig(array $config): static
     {
         $this->config = $config;
+
+        if (!empty($this->config['model'])) {
+            $this->model = $this->config['model'];
+        }
 
         return $this;
     }
