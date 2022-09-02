@@ -994,7 +994,7 @@ class UserSimple implements AuthenticatableInterface
     );
 
     $manager = new Manager();
-    $manager->addGuard("web", $guard, true); //третий аргумент - назнчаить охранника по дефолту
+    $manager->addGuard("web", $guard, true); //третий аргумент - назначить охранника по дефолту
 
     return $manager;
 ```

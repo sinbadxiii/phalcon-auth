@@ -26,7 +26,7 @@ class Stream extends Memory
     {
         if ($this->config && !isset($this->config["src"])) {
             throw new InvalidArgumentException(
-                "Сonfig key 'src' with user data array empty or does not exist"
+                "Сonfig key 'src' with path source file not exist"
             );
         }
 
@@ -34,13 +34,21 @@ class Stream extends Memory
             $this->srcFile = $this->config["src"];
         }
 
-        if (empty($this->srcFile)) {
+        if (empty($this->data) && empty($this->srcFile)) {
             throw new InvalidArgumentException(
                 "File source is empty"
             );
         }
 
-        $this->data = $this->read($this->srcFile);
+        if (empty($this->data)) {
+            $this->data = $this->read($this->srcFile);
+        }
+
+        if (empty($this->data)) {
+            throw new InvalidArgumentException(
+                "Data is empty"
+            );
+        }
 
         return $this->data;
     }
