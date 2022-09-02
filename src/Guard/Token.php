@@ -10,7 +10,6 @@ use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 
 use function is_null;
-use function var_dump;
 
 /**
  * Class Token
@@ -70,7 +69,7 @@ class Token implements GuardInterface
         $token = $this->getTokenForRequest();
 
         if ( ! empty($token)) {
-            $user = $this->adapter->retrieveByCredentials([
+            $user = $this->adapter->findFirstByCredentials([
                 $this->storageKey => $token,
             ]);
         }
@@ -90,7 +89,7 @@ class Token implements GuardInterface
 
         $credentials = [$this->storageKey => $credentials[$this->inputKey]];
 
-        if ($this->adapter->retrieveByCredentials($credentials)) {
+        if ($this->adapter->findFirstByCredentials($credentials)) {
             return true;
         }
 

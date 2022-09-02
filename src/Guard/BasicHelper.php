@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sinbadxiii\PhalconAuth\Guard;
 
 use Phalcon\Http\Request;
-use function var_dump;
 
 /**
  * Trait BasicHelper

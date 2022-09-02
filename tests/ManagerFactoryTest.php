@@ -15,7 +15,6 @@ use Sinbadxiii\PhalconAuth\Adapter\Model;
 use Sinbadxiii\PhalconAuth\Adapter\Stream;
 use Sinbadxiii\PhalconAuth\ManagerFactory;
 use Sinbadxiii\PhalconAuth\ManagerInterface;
-use function var_dump;
 
 /**
  * Class ManagerTest

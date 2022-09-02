@@ -32,7 +32,7 @@ class Model extends AbstractAdapter implements AdapterWithRememberTokenInterface
      * @param array $credentials
      * @return AuthenticatableInterface|null
      */
-    public function retrieveByCredentials(array $credentials): ?AuthenticatableInterface
+    public function findFirstByCredentials(array $credentials): ?AuthenticatableInterface
     {
         $builder = Di::getDefault()->get('modelsManager')
             ->createBuilder()
@@ -53,7 +53,7 @@ class Model extends AbstractAdapter implements AdapterWithRememberTokenInterface
      * @param $identifier
      * @return AuthenticatableInterface|null
      */
-    public function retrieveById($identifier): ?AuthenticatableInterface
+    public function findFirstById($identifier): ?AuthenticatableInterface
     {
         return $this->getProviderStorage()::findFirst($identifier);
     }
@@ -64,7 +64,7 @@ class Model extends AbstractAdapter implements AdapterWithRememberTokenInterface
      * @param $user_agent
      * @return AuthenticatableInterface|null
      */
-    public function retrieveByToken($identifier, $token, $user_agent): ?AuthenticatableInterface
+    public function findFirstByToken($identifier, $token, $user_agent): ?AuthenticatableInterface
     {
         $retrievedModel = $this->getProviderStorage()::findFirst($identifier);
 

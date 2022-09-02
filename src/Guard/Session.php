@@ -16,7 +16,6 @@ use Phalcon\Session\ManagerInterface as SessionManagerInterface;
 use Phalcon\Events\ManagerInterface as EventsManagerInterface;
 
 use function is_null;
-use function var_dump;
 
 /**
  * Class Session
@@ -83,7 +82,7 @@ class Session extends AbstractEventsAware implements
      */
     public function attempt(array $credentials = [], $remember = false): bool
     {
-        $this->lastUserAttempted = $this->adapter->retrieveByCredentials($credentials);
+        $this->lastUserAttempted = $this->adapter->findFirstByCredentials($credentials);
 
         if ($this->hasValidCredentials($this->lastUserAttempted, $credentials)) {
             $this->login($this->lastUserAttempted, $remember);
@@ -107,7 +106,7 @@ class Session extends AbstractEventsAware implements
         $id = $this->session->get($this->getName());
 
         if (!is_null($id)) {
-            $this->user = $this->adapter->retrieveById($id);
+            $this->user = $this->adapter->findFirstById($id);
         }
 
         if (is_null($this->user) && !is_null($recaller = $this->recaller())) {
@@ -137,7 +136,7 @@ class Session extends AbstractEventsAware implements
      */
     public function validate(array $credentials = []): bool
     {
-        $this->lastUserAttempted = $this->adapter->retrieveByCredentials($credentials);
+        $this->lastUserAttempted = $this->adapter->findFirstByCredentials($credentials);
 
         return $this->hasValidCredentials($this->lastUserAttempted, $credentials);
     }
@@ -148,7 +147,7 @@ class Session extends AbstractEventsAware implements
      */
     protected function userFromRecaller($recaller): ?AuthenticatableInterface
     {
-        $this->viaRemember = ! is_null($user = $this->adapter->retrieveByToken(
+        $this->viaRemember = ! is_null($user = $this->adapter->findFirstByToken(
             $recaller->id(), $recaller->token(), $recaller->userAgent()
         ));
 
@@ -226,7 +225,7 @@ class Session extends AbstractEventsAware implements
      */
     public function loginById($id, bool $remember = false)
     {
-        if ( ! is_null($user = $this->adapter->retrieveById($id))) {
+        if ( ! is_null($user = $this->adapter->findFirstById($id))) {
             $this->login($user, $remember);
 
             return $user;

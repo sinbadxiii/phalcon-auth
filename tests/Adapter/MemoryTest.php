@@ -46,8 +46,8 @@ class MemoryTest extends AbstractTestCase
         $adapter->setModel(UserModelFake::class);
         $adapter->setData($data);
 
-        $this->assertEquals(new UserModelFake($data[0]), $adapter->retrieveById(0));
-        $this->assertEquals(new UserModelFake($data[1]), $adapter->retrieveByCredentials(["name" => "user2"]));
+        $this->assertEquals(new UserModelFake($data[0]), $adapter->findFirstById(0));
+        $this->assertEquals(new UserModelFake($data[1]), $adapter->findFirstByCredentials(["name" => "user2"]));
         $this->assertEquals((new UserModelFake($data[2]))->getId(), 2);
     }
 

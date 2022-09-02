@@ -3,11 +3,9 @@
 namespace Sinbadxiii\PhalconAuth\Tests\Adapter;
 
 use Phalcon\Encryption\Security;
-use ReflectionClass;
 use Sinbadxiii\PhalconAuth\Adapter\AbstractAdapter;
 use Sinbadxiii\PhalconAuth\Adapter\AdapterInterface;
 use Sinbadxiii\PhalconAuth\Tests\AbstractTestCase;
-use function var_dump;
 
 /**
  * Class AdapterTest

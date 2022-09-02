@@ -121,6 +121,61 @@ return $auth;
 
 Предположительно Сессии вы будете использовать в веб-приложениях после логина в личный кабинет,а Токен, например, в микро приложениях в качестве api сервисов. Но ничего вам не мешает применять или комбинировать охранников в нестандартных приложениях.
 
+## Session Guard
+
+```php
+use Sinbadxiii\PhalconAuth\Manager;
+use App\Models\User;
+use Sinbadxiii\PhalconAuth\Adapter\Model;
+use Sinbadxiii\PhalconAuth\Guard\Session;
+
+$auth = new Manager();
+
+$configAdapter = [
+    'model' => User::class,
+];
+
+$adapter = new Model($this->getSecurity(), $configAdapter);
+$guard   = new Session(
+    $adapter,
+    $this->getSession(),
+    $this->getCookies(),
+    $this->getRequest(),
+    $this->getEventsManager()
+);
+
+$auth->addGuard("web", $guard, true);
+
+return $auth;
+```
+
+- public function <b>__construct</b>(AdapterInterface $adapter, SessionManagerInterface $session,
+  Cookies $cookies, Request $request, EventsManagerInterface $eventsManager)
+- public function <b>attempt</b>(array $credentials = [], $remember = false) - попытка аутентификации
+- public function <b>user</b>() - получить аутентифицированного пользователя
+- public function <b>validate</b>(array $credentials = []) - валидация входных данных
+- public function <b>getName</b>() - получение имени сессии
+- public function <b>getRememberName</b>() - имя куки при запомнить меня
+- public function <b>login</b>(AuthenticatableInterface $user, bool $remember = false) - логин экземпляра пользователя
+- public function <b>loginById</b>($id, bool $remember = false) - логин по Id пользователя
+- public function <b>once</b>(array $credentials = []) - логин без сохранения пользователя в сессию
+- public function <b>logout</b>() - выход 
+- public function <b>getLastUserAttempted</b>() - получение последнего попытавшегося залогиниться пользователя
+- public function <b>viaRemember</b>() - проверка что пользователь был вытащен из Запомнить меня
+- public function <b>getUser</b>() - получить пользователя
+- public function <b>setRequest</b>(Request $request)
+- public function <b>setSession</b>(SessionManagerInterface $session)
+- public function <b>setCookies</b>(Cookies $cookies)
+- public function <b>getAdapter</b>() - получить адаптер поставщика
+- public function <b>setAdapter</b>(AdapterInterface $adapter) - назначить адаптера поставшика
+
+Basic
+
+- public function <b>basic</b>(string $field = 'email', array $extraConditions = []) - аутентификация через Basic Auth
+- public function <b>onceBasic</b>(string $field = 'email', array $extraConditions = []) - аутентификация через Basic Auth без сохранения в сессию
+
+## Token Guard
+
 Чтобы воспользоваться `Sinbadxiii\PhalconAuth\Guard\Token`, необходимо в качестве второго аргумента передать конфиг с названиями имя параметра запроса и поля в хранилище данных пользователей, например, поле таблицы `users` в бд:
 
 ```php
@@ -131,7 +186,6 @@ return $auth;
     ...
 ]
 ```
-
 ```php
 use Sinbadxiii\PhalconAuth\Manager;
 use App\Models\User;
@@ -186,6 +240,15 @@ https://yourapidomain/api/v2/users
 
 > Помните, что каждый ваш запрос к приложению, должен сопровождаться параметром `auth_token` с токеном доступа.
 
+- public function <b>__construct</b>(AdapterInterface $adapter, array $config, Request $request)
+- public function <b>user</b>() - аутентифицированный пользователь
+- public function <b>validate</b>(array $credentials = []) - валидация
+- public function <b>getTokenForRequest</b>() - поулчить токен из запросов (GET, POST, Headers)
+- public function <b>setRequest</b>(Request $request)
+- public function <b>getRequest</b>()
+- public function <b>getAdapter</b>()
+- public function <b>setAdapter</b>(AdapterInterface $adapter)
+
 ## Создание своего Охранника
 
 ```php 
@@ -212,7 +275,7 @@ interface GuardInterface
 
 ## Access
 
-С помощью Доступов (Access) вы можете задавать определенный доступ к тем или иным областям приложения, например в контроллер профиля пользователя разрешен доступ только аутентифицированным пользователям.
+С помощью Доступов (Access) вы можете задавать и проверять требуемый доступ к тем или иным областям приложения, например в контроллер профиля пользователя разрешен доступ только аутентифицированным пользователям.
 
 ```php 
 <?php
@@ -306,7 +369,6 @@ class Guest extends AbstractAccess
     }
 }
 ```
-
 В случае если метод `allowedIf()` вернет `true`, то пользователь сможет идти дальше, если же результат будет равен `false`, то сработает метод неудачи `redirectTo()`, и приложение перенаправит пользователя, т.к. у каждого приложение логика перенаправлений может быть разная, то вам следует создать свои классы Access `auth` и `guest`, наследовав от дефолтных классов и переопределить метод `redirectTo()`:
 ```php 
 <?php
@@ -343,7 +405,6 @@ class Guest extends GuestAccess
     }
 }
 ```
-
 Чтобы создать свой Access, можно имплементировать интерфейс `Sinbadxiii\PhalconAuth\Access\AccessInterface`:
 
 ```php 
@@ -477,9 +538,7 @@ $di->setShared('dispatcher', function () use ($di) {
     return $dispatcher;
 });
 ```
-
 Свойство `$accessList` позволяет быстро добавлять новые уровни доступа в приложении, например, чтобы добавить новый доступ `admin`, достаточно создать класс с условием и добавить его в список `$accessList`:
-
 ```php 
 <?php
 
@@ -785,6 +844,52 @@ interface RememberingInterface
     return $manager;
 ```
 
+## Адаптер поставщика `memory`
+
+Используя `setData()` можно задать массив данных с пользователями, который имеет вид:
+
+```php 
+[
+    ["username" =>"admin", "name" => "admin", 'password' => 'admin', "email" => "admin@admin.ru"],
+    ["username" => "user", "name" => "user", 'password' => 'user', "email" => "user@user.ru"],
+]
+```
+
+```php 
+$di->setShared("auth", function () {
+
+    $security = $this->getSecurity();
+
+    $data = [
+        ["auth_token" => '1', "name" => "admin", "username" => "admin", 'password' => 'admin', "email" => "admin@admin.ru"],
+        ["auth_token" => '2',  "name" => "admin1", "username" => "admin", 'password' => 'admin1', "email" => "admin1@admin.ru"],
+    ];
+
+    $adapter     = new \Sinbadxiii\PhalconAuth\Adapter\Memory($security);
+    $adapter->setModel(App\Models\UserSimple::class);
+    $adapter->setData($data);
+    
+    $configGuard = [
+        'inputKey'   => 'auth_token',
+        'storageKey' => 'auth_token',
+    ];
+
+    $guard = new \Sinbadxiii\PhalconAuth\Guard\Token(
+        $adapter,
+        $configGuard,
+        $this->getRequest()
+    );
+    
+    $manager = new Manager();
+    $manager->addGuard("api", $guard, true);
+
+    return $manager;
+});
+```
+
+- public <b>setData</b>(array $data) - массив с данными
+- public <b>getData</b>() - получить массив с данными
+
 ## Адаптер поставщика `Stream`
 
 Если взять в качестве адаптера поставщиков `users` не `Sinbadxiii\PhalconAuth\Adapter\Model`, а файл `Sinbadxiii\PhalconAuth\Adapter\Stream`:
@@ -896,52 +1001,10 @@ class UserSimple implements AuthenticatableInterface
 
 - public <b>setFileSource</b>(string $pathSrcFile) - указать путь к файлу
 - public <b>getFileSource</b>() - получить путь к файлу
+- public <b>setData</b>(array $data) - массив с данными пользователей
+- public <b>getData</b>() - получить массив с данными пользователей
 
-## Адаптер поставщика `memory`
 
-Используя `setData()` можно задать массив данных с пользователями, который имеет вид:
-
-```php 
-[
-    ["username" =>"admin", "name" => "admin", 'password' => 'admin', "email" => "admin@admin.ru"],
-    ["username" => "user", "name" => "user", 'password' => 'user', "email" => "user@user.ru"],
-]
-```
-
-```php 
-$di->setShared("auth", function () {
-
-    $security = $this->getSecurity();
-
-    $data = [
-        ["auth_token" => '1', "name" => "admin", "username" => "admin", 'password' => 'admin', "email" => "admin@admin.ru"],
-        ["auth_token" => '2',  "name" => "admin1", "username" => "admin", 'password' => 'admin1', "email" => "admin1@admin.ru"],
-    ];
-
-    $adapter     = new \Sinbadxiii\PhalconAuth\Adapter\Memory($security);
-    $adapter->setModel(App\Models\UserSimple::class);
-    $adapter->setData($data);
-    
-    $configGuard = [
-        'inputKey'   => 'auth_token',
-        'storageKey' => 'auth_token',
-    ];
-
-    $guard = new \Sinbadxiii\PhalconAuth\Guard\Token(
-        $adapter,
-        $configGuard,
-        $this->getRequest()
-    );
-    
-    $manager = new Manager();
-    $manager->addGuard("api", $guard, true);
-
-    return $manager;
-});
-```
-
-- public <b>setData</b>(array $data) - массив с данными
-- public <b>getData</b>() - получить массив с данными
 
 > Не рекомендуется использовать адаптеры `stream` и `memory` в реальных приложениях из-за их функциональной ограниченности и сложности управления пользователями. Это может быть полезно в прототипах приложений и для ограниченных приложений, которые не хранят пользователей в базах данных.
 
@@ -958,8 +1021,8 @@ use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 
 interface AdapterInterface
 {
-    public function retrieveByCredentials(array $credentials);
-    public function retrieveById($id);
+    public function findFirstByCredentials(array $credentials);
+    public function findFirstById($id);
     public function validateCredentials(AuthenticatableInterface $user, array $credentials): bool;
 }
 ```
@@ -979,7 +1042,7 @@ use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 
 interface AdapterWithRememberTokenInterface
 {
-    public function retrieveByToken($identifier, $token, $user_agent): ?AuthenticatableInterface;
+    public function findFirstByToken($identifier, $token, $user_agent): ?AuthenticatableInterface;
     public function createRememberToken(RememberingInterface $user): RememberTokenInterface;
 }
 ```

@@ -30,7 +30,7 @@ class SessionTest extends AbstractTestCase
     {
         $security = new Security();
 
-        $сonfigAdapter = [
+        $configAdapter = [
                 'data' => [
                     ['email' => 'user@user.ru', "password" => "12345", "id" => 0],
                     ['email' => 'user1@user1.ru', "password" => "1234", "id" => 1],
@@ -38,7 +38,7 @@ class SessionTest extends AbstractTestCase
                 'model' => UserModelFake::class
             ];
 
-        $adapter  = new Memory($security, $сonfigAdapter);
+        $adapter  = new Memory($security, $configAdapter);
 
         $session = new Session(
             $adapter,

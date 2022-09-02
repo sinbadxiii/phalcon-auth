@@ -3,7 +3,6 @@
 namespace Sinbadxiii\PhalconAuth\Tests;
 
 use InvalidArgumentException;
-use Phalcon\Config\Config;
 use Phalcon\Encryption\Security;
 use Phalcon\Events\Manager as EventsManager;
 use Phalcon\Http\Request;
@@ -12,15 +11,11 @@ use Phalcon\Session\Manager as SessionManager;
 use Sinbadxiii\PhalconAuth\Access\Auth;
 use Sinbadxiii\PhalconAuth\Access\Guest;
 use Sinbadxiii\PhalconAuth\Adapter\Memory;
-use Sinbadxiii\PhalconAuth\Adapter\Model;
-use Sinbadxiii\PhalconAuth\Adapter\Stream;
 use Sinbadxiii\PhalconAuth\Guard\Session;
 use Sinbadxiii\PhalconAuth\Guard\Token;
 use Sinbadxiii\PhalconAuth\Manager;
-use Sinbadxiii\PhalconAuth\ManagerFactory;
 use Sinbadxiii\PhalconAuth\ManagerInterface;
 use Sinbadxiii\PhalconAuth\Tests\User\UserModelFake;
-use function var_dump;
 
 /**
  * Class ManagerTest
@@ -28,20 +23,10 @@ use function var_dump;
  */
 class ManagerTest extends AbstractTestCase
 {
-    /**
-     * @test
-     */
-    public function implementFromManagerInterface(): void
-    {
-        $manager = new Manager();
+    protected $manager;
+    protected $guard;
 
-        $this->assertInstanceOf(ManagerInterface::class, $manager);
-    }
-
-    /**
-     * @test
-     */
-    public function guard(): void
+    protected function setUp(): void
     {
         $security = new Security();
         $adapter  = new Memory($security);
@@ -59,7 +44,24 @@ class ManagerTest extends AbstractTestCase
         $manager = new Manager();
         $manager->addGuard("web", $guard);
 
-        $this->assertEquals($guard, $manager->guard("web"));
+        $this->manager = $manager;
+        $this->guard = $guard;
+    }
+
+    /**
+     * @test
+     */
+    public function implementFromManagerInterface(): void
+    {
+        $this->assertInstanceOf(ManagerInterface::class, $this->manager);
+    }
+
+    /**
+     * @test
+     */
+    public function guard(): void
+    {
+        $this->assertEquals($this->guard, $this->manager->guard("web"));
     }
 
     /**
@@ -67,23 +69,9 @@ class ManagerTest extends AbstractTestCase
      */
     public function getDefaultGuardFromAddGuardArgument(): void
     {
-        $security = new Security();
-        $adapter  = new Memory($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setData([]);
+        $this->manager->addGuard("web", $this->guard, true);
 
-        $guard = new Session(
-            $adapter,
-            new SessionManager(),
-            new Cookies(),
-            new Request(),
-            new EventsManager(),
-        );
-
-        $manager = new Manager();
-        $manager->addGuard("web", $guard, true);
-
-        $this->assertEquals($guard, $manager->getDefaultGuard());
+        $this->assertEquals($this->guard, $this->manager->getDefaultGuard());
     }
 
     /**
@@ -91,23 +79,9 @@ class ManagerTest extends AbstractTestCase
      */
     public function getDefaultGuard(): void
     {
-        $security = new Security();
-        $adapter  = new Memory($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setData([]);
+        $this->manager->setDefaultGuard($this->guard);
 
-        $guard = new Session(
-            $adapter,
-            new SessionManager(),
-            new Cookies(),
-            new Request(),
-            new EventsManager(),
-        );
-
-        $manager = new Manager();
-        $manager->setDefaultGuard($guard);
-
-        $this->assertEquals($guard, $manager->getDefaultGuard());
+        $this->assertEquals($this->guard, $this->manager->getDefaultGuard());
     }
 
     /**
@@ -151,24 +125,9 @@ class ManagerTest extends AbstractTestCase
      */
     public function setAccess(): void
     {
-        $security = new Security();
-        $adapter  = new Memory($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setData([]);
+        $this->manager->setAccess(new Auth());
 
-        $guard = new Session(
-            $adapter,
-            new SessionManager(),
-            new Cookies(),
-            new Request(),
-            new EventsManager(),
-        );
-
-        $manager = new Manager();
-        $manager->addGuard("web", $guard);
-        $manager->setAccess(new Auth());
-
-        $this->assertEquals(new Auth(), $manager->getAccess());
+        $this->assertEquals(new Auth(), $this->manager->getAccess());
     }
 
     /**
@@ -176,29 +135,14 @@ class ManagerTest extends AbstractTestCase
      */
     public function setAccessAuth(): void
     {
-        $security = new Security();
-        $adapter  = new Memory($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setData([]);
-
-        $guard = new Session(
-            $adapter,
-            new SessionManager(),
-            new Cookies(),
-            new Request(),
-            new EventsManager(),
-        );
-
-        $manager = new Manager();
-        $manager->addGuard("web", $guard);
-        $manager->setAccessList(
+        $this->manager->setAccessList(
             [
                 "auth"  => Auth::class,
                 'guest' => Guest::class
             ]
         );
-        $manager->access("auth");
-        $this->assertEquals(new Auth(), $manager->getAccess());
+        $this->manager->access("auth");
+        $this->assertEquals(new Auth(), $this->manager->getAccess());
     }
 
     /**
@@ -206,29 +150,14 @@ class ManagerTest extends AbstractTestCase
      */
     public function setAccessGuest(): void
     {
-        $security = new Security();
-        $adapter  = new Memory($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setData([]);
-
-        $guard = new Session(
-            $adapter,
-            new SessionManager(),
-            new Cookies(),
-            new Request(),
-            new EventsManager(),
-        );
-
-        $manager = new Manager();
-        $manager->addGuard("web", $guard);
-        $manager->setAccessList(
+        $this->manager->setAccessList(
             [
                 "auth"  => Auth::class,
                 'guest' => Guest::class
             ]
         );
-        $manager->access("guest");
-        $this->assertEquals(new Guest(), $manager->getAccess());
+        $this->manager->access("guest");
+        $this->assertEquals(new Guest(), $this->manager->getAccess());
     }
 
     /**
@@ -238,28 +167,13 @@ class ManagerTest extends AbstractTestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $security = new Security();
-        $adapter  = new Memory($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setData([]);
-
-        $guard = new Session(
-            $adapter,
-            new SessionManager(),
-            new Cookies(),
-            new Request(),
-            new EventsManager(),
-        );
-
-        $manager = new Manager();
-        $manager->addGuard("web", $guard);
-        $manager->setAccessList(
+        $this->manager->setAccessList(
             [
                 "auth"  => Auth::class,
                 'guest' => Guest::class
             ]
         );
-        $manager->access("admin");
+        $this->manager->access("admin");
     }
 
     /**
@@ -267,29 +181,14 @@ class ManagerTest extends AbstractTestCase
      */
     public function exceptActions(): void
     {
-        $security = new Security();
-        $adapter  = new Memory($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setData([]);
-
-        $guard = new Session(
-            $adapter,
-            new SessionManager(),
-            new Cookies(),
-            new Request(),
-            new EventsManager(),
-        );
-
-        $manager = new Manager();
-        $manager->addGuard("web", $guard);
-        $manager->setAccessList(
+        $this->manager->setAccessList(
             [
                 "auth"  => Auth::class
             ]
         );
-        $manager->access("auth")->except("action", "action2");
+        $this->manager->access("auth")->except("action", "action2");
 
-        $this->assertEquals(["action", "action2"], $manager->getAccess()->getExceptActions());
+        $this->assertEquals(["action", "action2"], $this->manager->getAccess()->getExceptActions());
     }
 
     /**
@@ -297,29 +196,14 @@ class ManagerTest extends AbstractTestCase
      */
     public function onlyActions(): void
     {
-        $security = new Security();
-        $adapter  = new Memory($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setData([]);
-
-        $guard = new Session(
-            $adapter,
-            new SessionManager(),
-            new Cookies(),
-            new Request(),
-            new EventsManager(),
-        );
-
-        $manager = new Manager();
-        $manager->addGuard("web", $guard);
-        $manager->setAccessList(
+        $this->manager->setAccessList(
             [
                 "auth"  => Auth::class
             ]
         );
-        $manager->access("auth")->only("action");
+        $this->manager->access("auth")->only("action");
 
-        $this->assertEquals(["action"], $manager->getAccess()->getOnlyActions());
+        $this->assertEquals(["action"], $this->manager->getAccess()->getOnlyActions());
     }
 
     /**

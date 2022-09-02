@@ -43,8 +43,8 @@ class StreamTest extends AbstractTestCase
         $data = $adapter->getData();
 
 
-        $this->assertEquals(new UserModelFake($data[0]), $adapter->retrieveById(0));
-        $this->assertEquals(new UserModelFake($data[1]), $adapter->retrieveByCredentials(["name" => "user1"]));
+        $this->assertEquals(new UserModelFake($data[0]), $adapter->findFirstById(0));
+        $this->assertEquals(new UserModelFake($data[1]), $adapter->findFirstByCredentials(["name" => "user1"]));
         $this->assertEquals((new UserModelFake($data[2]))->getId(), 2);
     }
 

@@ -9,7 +9,6 @@ use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 
 use function array_column;
 use function array_search;
-use function var_dump;
 
 /**
  * Class Memory
@@ -26,7 +25,7 @@ class Memory extends AbstractAdapter
      * @param array $credentials
      * @return AuthenticatableInterface|null
      */
-    public function retrieveByCredentials(array $credentials): ?AuthenticatableInterface
+    public function findFirstByCredentials(array $credentials): ?AuthenticatableInterface
     {
         $providerStorage = $this->getProviderStorage();
 
@@ -37,7 +36,7 @@ class Memory extends AbstractAdapter
      * @param $identifier
      * @return AuthenticatableInterface|null
      */
-    public function retrieveById($identifier): ?AuthenticatableInterface
+    public function findFirstById($identifier): ?AuthenticatableInterface
     {
         if (empty($this->model)) {
             throw new InvalidArgumentException("Сonfig with key 'model' is empty");
