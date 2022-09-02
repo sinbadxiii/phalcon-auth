@@ -29,7 +29,22 @@ class Memory extends AbstractAdapter
     {
         $providerStorage = $this->getProviderStorage();
 
-        return $this->first($providerStorage, $credentials);
+        $field = array_key_first($credentials) ?? "email";
+        $term = $credentials[$field];
+
+        $key = array_search($term, array_column($providerStorage, $field), true);
+
+        if (empty($this->model)) {
+            throw new InvalidArgumentException("Сonfig with key 'model' is empty");
+        }
+
+        $userModel = $this->model;
+
+        if ($key !== false) {
+            return new $userModel($providerStorage[$key] + ['id' => $key]);
+        }
+
+        return null;;
     }
 
     /**
@@ -63,31 +78,6 @@ class Memory extends AbstractAdapter
         return (isset($this->config['passsword_crypted'])) ? $this->hasher->checkHash(
             $credentials['password'], $user->getAuthPassword()
         ) : $credentials['password'] === $user->getAuthPassword();
-    }
-
-    /**
-     * @param array $providerStorage
-     * @param array $credentials
-     * @return AuthenticatableInterface|null
-     */
-    public function first(array $providerStorage, array $credentials): ?AuthenticatableInterface
-    {
-        $field = array_key_first($credentials) ?? "email";
-        $term = $credentials[$field];
-
-        $key = array_search($term, array_column($providerStorage, $field), true);
-
-        if (empty($this->model)) {
-            throw new InvalidArgumentException("Сonfig with key 'model' is empty");
-        }
-
-        $userModel = $this->model;
-
-        if ($key !== false) {
-            return new $userModel($providerStorage[$key] + ['id' => $key]);
-        }
-
-        return null;
     }
 
     /**
