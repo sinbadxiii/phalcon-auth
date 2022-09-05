@@ -52,26 +52,6 @@ class MemoryTest extends AbstractTestCase
     }
 
     /** @test */
-    public function firstFromData()
-    {
-        $data = [
-            0 => ["id" => 0, "name" => "user", "password" => "54325"],
-            1 => ["id" => 1, "name" => "user2", "password" => "54225"],
-            2 => ["id" => 2, "name" => "user3", "password" => "34225"],
-        ];
-
-        $security = new Security();
-        $adapter = new Memory($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setData($data);
-        $providerStorage = $adapter->getData();
-        $this->assertEquals(new UserModelFake($data[1]), $adapter->first(
-            $providerStorage,
-            ["id" => 1, "name" => "user2", "password" => "54225"]
-        ));
-    }
-
-    /** @test */
     public function getProviderStorageWithoutSetData(): void
     {
         $this::expectException(\InvalidArgumentException::class);

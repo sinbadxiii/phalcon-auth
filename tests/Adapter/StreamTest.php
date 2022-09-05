@@ -49,40 +49,6 @@ class StreamTest extends AbstractTestCase
     }
 
     /** @test */
-    public function foundWithFirstFromData()
-    {
-
-        $security = new Security();
-        $adapter = new Stream($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setFileSource(__DIR__ . "/users.json");
-
-        $data = $adapter->getData();
-
-        $this->assertEquals(new UserModelFake($data[1]), $adapter->first(
-            $data,
-            ["name" => "user1", "password" => "user1"]
-        ));
-    }
-
-    /** @test */
-    public function notFoundWithfirstFromData()
-    {
-
-        $security = new Security();
-        $adapter = new Stream($security);
-        $adapter->setModel(UserModelFake::class);
-        $adapter->setFileSource(__DIR__ . "/users.json");
-
-        $data = $adapter->getData();
-
-        $this->assertNull($adapter->first(
-            $data,
-            ["name" => "user333", "password" => "user333"]
-        ));
-    }
-
-    /** @test */
     public function getProviderStorageWithoutSetData(): void
     {
         $this::expectException(\InvalidArgumentException::class);
