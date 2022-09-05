@@ -22,7 +22,7 @@ trait GuardHelper
     /**
      * @return mixed
      */
-    public function id(): mixed
+    public function id()
     {
         if ($this->user()) {
             return $this->user()->getAuthIdentifier();
