@@ -786,6 +786,31 @@ class RememberToken extends Model implements  RememberTokenInterface
     {
         return $this->user_agent;
     }
+    
+      public function beforeValidationOnCreate()
+    {
+        $this->created_at = date(DATE_ATOM);
+        $this->updated_at = date(DATE_ATOM);
+        if (!$this->expired_at) {
+            $this->expired_at = date(DATE_ATOM);
+        }
+    }
+
+    public function beforeValidationOnSave()
+    {
+        if (!$this->created_at) {
+            $this->created_at = date(DATE_ATOM);
+        }
+        if (!$this->expired_at) {
+            $this->expired_at = date(DATE_ATOM);
+        }
+        $this->updated_at = date(DATE_ATOM);
+    }
+
+    public function beforeValidationOnUpdate()
+    {
+        $this->updated_at = date(DATE_ATOM);
+    }
 }
 ```
 Интерфейс `Sinbadxiii\PhalconAuth\AuthenticatableInterface` имеет следущий вид:

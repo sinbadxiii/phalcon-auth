@@ -15,7 +15,10 @@ use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 use Phalcon\Session\ManagerInterface as SessionManagerInterface;
 use Phalcon\Events\ManagerInterface as EventsManagerInterface;
 
+use function date;
 use function is_null;
+use function json_encode;
+use function sha1;
 
 /**
  * Class Session
@@ -66,7 +69,7 @@ class Session extends AbstractEventsAware implements
 
     public function __construct(
         AdapterInterface $adapter, SessionManagerInterface $session,
-        Cookies $cookies, Request $request, EventsManagerInterface $eventsManager)
+        Cookies $cookies, Request $request, ?EventsManagerInterface $eventsManager)
     {
         $this->adapter       = $adapter;
         $this->session       = $session;
@@ -198,7 +201,9 @@ class Session extends AbstractEventsAware implements
      */
     public function login(AuthenticatableInterface $user, bool $remember = false): void
     {
-        $this->eventsManager->fire("auth:beforeLogin", $this);
+        if ($this->eventsManager) {
+            $this->eventsManager->fire("auth:beforeLogin", $this);
+        }
 
         $this->updateSession($user->getAuthIdentifier());
 
@@ -214,7 +219,9 @@ class Session extends AbstractEventsAware implements
 
         $this->setUser($user);
 
-        $this->eventsManager->fire("auth:afterLogin", $this);
+        if ($this->eventsManager) {
+            $this->eventsManager->fire("auth:afterLogin", $this);
+        }
     }
 
     /**
@@ -240,12 +247,16 @@ class Session extends AbstractEventsAware implements
      */
     public function once(array $credentials = []): bool
     {
-        $this->eventsManager->fire("auth:beforeLogin", $this);
+        if ($this->eventsManager) {
+            $this->eventsManager->fire("auth:beforeLogin", $this);
+        }
 
         if ($this->validate($credentials)) {
             $this->setUser($this->lastUserAttempted);
 
-            $this->eventsManager->fire("auth:afterLogin", $this);
+            if ($this->eventsManager) {
+                $this->eventsManager->fire("auth:afterLogin", $this);
+            }
 
             return true;
         }
@@ -300,9 +311,11 @@ class Session extends AbstractEventsAware implements
     {
         $user = $this->user();
 
-        $this->eventsManager->fire("auth:beforeLogout", $this, [
-            "user" => $user
-        ]);
+        if ($this->eventsManager) {
+            $this->eventsManager->fire("auth:beforeLogout", $this, [
+                "user" => $user
+            ]);
+        }
 
         $recaller = $this->recaller();
 
@@ -318,9 +331,11 @@ class Session extends AbstractEventsAware implements
 
         $this->session->remove($this->getName());
 
-        $this->eventsManager->fire("auth:afterLogout", $this, [
-            "user" => $user
-        ]);
+        if ($this->eventsManager) {
+            $this->eventsManager->fire("auth:afterLogout", $this, [
+                "user" => $user
+            ]);
+        }
 
         $this->user = null;
     }

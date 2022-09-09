@@ -21,6 +21,8 @@ use Phalcon\Events\EventsAwareInterface;
 use function class_exists;
 use function is_null;
 use function call_user_func;
+use function sprintf;
+use function ucfirst;
 
 /**
  * Class Factory
@@ -51,7 +53,7 @@ class ManagerFactory extends Manager implements EventsAwareInterface
     protected SessionManagerInterface $session;
     protected Cookies $cookies;
     protected Request $request;
-    protected EventsManagerInterface $eventsManager;
+    protected ?EventsManagerInterface $eventsManager;
 
     /**
      * @param array $config
@@ -67,7 +69,7 @@ class ManagerFactory extends Manager implements EventsAwareInterface
         SessionManagerInterface $session = null,
         Cookies $cookies = null,
         Request $request = null,
-        EventsManagerInterface $eventsManager = null
+        ?EventsManagerInterface $eventsManager = null
     ) {
         $this->config = $config;
 
@@ -88,7 +90,7 @@ class ManagerFactory extends Manager implements EventsAwareInterface
         $this->session = $session ?? Di::getDefault()->getShared("session");
         $this->cookies = $cookies ?? Di::getDefault()->getShared("cookies");
         $this->request = $request ?? Di::getDefault()->getShared("request");
-        $this->eventsManager = $eventsManager ?? Di::getDefault()->getShared("eventsManager");
+        $this->eventsManager = $eventsManager;
     }
 
     /**
