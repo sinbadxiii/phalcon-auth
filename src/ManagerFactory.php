@@ -53,7 +53,7 @@ class ManagerFactory extends Manager implements EventsAwareInterface
     protected SessionManagerInterface $session;
     protected Cookies $cookies;
     protected Request $request;
-    protected ?EventsManagerInterface $eventsManager;
+    protected ?EventsManagerInterface $eventsManager = null;
 
     /**
      * @param array $config
@@ -61,21 +61,18 @@ class ManagerFactory extends Manager implements EventsAwareInterface
      * @param SessionManagerInterface|null $session
      * @param Cookies|null $cookies
      * @param Request|null $request
-     * @param EventsManagerInterface|null $eventsManager
      */
     public function __construct(
         array $config = [],
         Security $security = null,
         SessionManagerInterface $session = null,
         Cookies $cookies = null,
-        Request $request = null,
-        ?EventsManagerInterface $eventsManager = null
+        Request $request = null
+        //?EventsManagerInterface $eventsManager = null
     ) {
         $this->config = $config;
-
         if (empty($this->config)) {
             if ($authConfig = Di::getDefault()->getShared("config")->auth) {
-
                 if (empty($authConfig)) {
                     throw new InvalidArgumentException(
                         "Configuration file auth.php (or key config->auth into your config) does not exist"
@@ -90,7 +87,7 @@ class ManagerFactory extends Manager implements EventsAwareInterface
         $this->session = $session ?? Di::getDefault()->getShared("session");
         $this->cookies = $cookies ?? Di::getDefault()->getShared("cookies");
         $this->request = $request ?? Di::getDefault()->getShared("request");
-        $this->eventsManager = $eventsManager;
+        //$this->eventsManager = $eventsManager;
     }
 
     /**
@@ -140,7 +137,7 @@ class ManagerFactory extends Manager implements EventsAwareInterface
 
                 return new Session(
                     $providerAdapter, $this->session, $this->cookies,
-                    $this->request, $this->eventsManager
+                    $this->request, $this->getEventsManager()
                 );
             case 'token':
                 $configGuard['inputKey'] ??= "auth_token";

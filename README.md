@@ -1087,11 +1087,12 @@ $di->setShared('auth', function () {
 Все, дальше `ManagerFactory` сделает все за вас, на основе вашего конфигурационного файла. По умолчанию используется конфигурация из `$this->config->auth`, если вы хотите использовать другую конфигурацию, отличную от `$this->config->auth` то можно передать в качестве первого аргумента другой конфиг:
 
 ```php
-$di->setShared("auth", function () {
+$di->setShared("auth", function () use ($di){
     $config = $this->getConfig()->auth_config_other;
-
+    $eventsManager = $di->getShared('eventsManager');
     $manager = new \Sinbadxiii\PhalconAuth\ManagerFactory($config->toArray());
-
+    $manager->setEventsManager($eventsManager);
+    $eventsManager->attach('auth',new \Sinbadxiii\PhalconAuth\Events\EventListener());
     return $manager;
 });
 ```
