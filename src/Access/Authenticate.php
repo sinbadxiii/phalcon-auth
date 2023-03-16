@@ -24,8 +24,10 @@ class Authenticate extends Injectable implements AuthenticatesRequestInterface
      */
     protected string $actionName;
 
-
-    public function __construct()
+    /**
+     * @return void
+     */
+    public function beforeDispatchLoop(Event $event, Dispatcher $dispatcher)
     {
         if (!empty($this->accessList)) {
             $this->getDI()->get("auth")->addAccessList($this->accessList);
