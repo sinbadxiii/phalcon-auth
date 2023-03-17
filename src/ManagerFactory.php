@@ -90,7 +90,7 @@ class ManagerFactory extends Manager implements EventsAwareInterface
         $this->session = $session ?? Di::getDefault()->getShared("session");
         $this->cookies = $cookies ?? Di::getDefault()->getShared("cookies");
         $this->request = $request ?? Di::getDefault()->getShared("request");
-        $this->eventsManager = $eventsManager;
+        $this->eventsManager = $eventsManager ?? Di::getDefault()->getShared("eventsManager");;
     }
 
     /**
