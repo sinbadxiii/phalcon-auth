@@ -1434,5 +1434,15 @@ class AuthWithBasic extends AbstractAccess
 
 После запроса, ни куки, ни сессия не будут содержать данные о пользователе, и следущий запрос так же должен содержать пользовательские данные заголовка `Authorization`, иначе будет вызвано исключение `Sinbadxiii\PhalconAuth\Exceptions`
 
+## Events
+
+| Event Name   | Can stop operation? |
+|--------------|-----------------|
+| beforeLogin  | Yes             |
+| afterLogin   | No              |
+| beforeLogout | Yes             |
+| afterLogout  | No              |
+
+
 ### License
 The MIT License (MIT). Please see [License File](https://github.com/sinbadxiii/phalcon-auth/blob/master/LICENSE) for more information.
