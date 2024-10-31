@@ -27,6 +27,14 @@ use function ucfirst;
 /**
  * Class Factory
  * @package Sinbadxiii\PhalconAuth
+ *
+ * @template UserModel of class-string<AuthenticatableInterface>
+ * @method UserModel user()
+ * @method int id
+ * @method bool guest
+ * @method bool check()
+ * @method bool validate(array $credentials = [])
+ * @method void setUser(AuthenticatableInterface $user);
  */
 class ManagerFactory extends Manager implements EventsAwareInterface
 {
