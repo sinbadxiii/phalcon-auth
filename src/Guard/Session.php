@@ -48,7 +48,7 @@ class Session extends AbstractEventsAware implements
     /**
      * @var EventsManagerInterface
      */
-    protected $eventsManager;
+    protected ?EventsManagerInterface $eventsManager;
 
     /**
      * @var null|AuthenticatableInterface
